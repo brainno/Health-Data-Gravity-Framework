@@ -95,8 +95,8 @@
 <body>
 
 <header class="topbar">
-  <a class="brand" href="app.html"><strong>HDGF Agent</strong><span data-i18n="prototype"></span></a>
-  <a class="back" href="app.html" data-i18n="back"></a>
+  <a class="brand" href="agent.html"><strong>HDGF Agent</strong><span data-i18n="prototype"></span></a>
+  <a class="back" href="agent.html" data-i18n="back"></a>
 </header>
 
 <main class="layout">
@@ -195,10 +195,12 @@
 
 <script type="module">
 import {
-  store, LANGS, getLang, setLang, pick, MODELS, getEngine, saveEngine, clearKey, makeClient,
-  LEVELS, LEVEL_LABEL, LEVEL_DESC, SECTIONS, SECTION_KEYS, getSharing, saveSharing, getRequests, resetDemo,
-  PATIENT, localizedRecord,
+  LANGS, getLang, setLang, pick, MODELS, getEngine, saveEngine, clearKey, makeClient,
+  LEVELS, LEVEL_LABEL, LEVEL_DESC, SECTIONS, SECTION_KEYS, getSharing, saveSharing, getRequests, resetDemo, wipeAll,
+  getSession, patientById, SEX, localizedRecord, getTrialFlags,
 } from './js/hdgf-core.js';
+const session = getSession();
+const me = session && session.role === 'patient' ? patientById(session.patientId) : null;
 
 const T = {
   prototype: { en: 'Prototype', ko: '프로토타입' },
@@ -250,6 +252,8 @@ const T = {
   resetDone: { en: 'Demo data reset', ko: '데모 데이터를 초기화했습니다' },
   wipeDone: { en: 'All local data deleted', ko: '모든 로컬 데이터를 삭제했습니다' },
   aboutH: { en: 'About this prototype', ko: '이 프로토타입에 대하여' },
+  sharePhys: { en: 'Sharing levels are set by each patient. Clinicians cannot change them.', ko: '공개 수준은 각 환자가 정합니다. 의료인은 변경할 수 없습니다.' },
+  shareSignIn: { en: 'Sign in as a patient to manage sharing levels.', ko: '공개 수준을 관리하려면 환자 계정으로 로그인하세요.' },
 };
 let lang = getLang();
 const t = (k) => pick(T[k], lang);
@@ -341,7 +345,9 @@ $('#langOptions').addEventListener('change', (e) => {
 
 /* ---------- Sharing ---------- */
 function renderSharing() {
-  const s = getSharing();
+  $('#exportBtn').hidden = !me;
+  if (!me) { $('#shareRows').innerHTML = `<p class="hint">${t(session ? 'sharePhys' : 'shareSignIn')}</p>`; return; }
+  const s = getSharing(me.id);
   $('#shareRows').innerHTML = SECTION_KEYS.map((k) => `
     <div class="share-row"><div class="nm">${esc(pick(SECTIONS[k].label, lang))}<small>${esc(pick(SECTIONS[k].desc, lang))}</small></div>
       <div class="seg" role="group" aria-label="${esc(pick(SECTIONS[k].label, lang))}">
@@ -350,30 +356,32 @@ function renderSharing() {
 }
 $('#shareRows').addEventListener('click', (e) => {
   const b = e.target.closest('button[data-sec]'); if (!b) return;
-  const s = getSharing(); s[b.dataset.sec] = b.dataset.level; saveSharing(s);
+  if (!me) return;
+  const s = getSharing(me.id); s[b.dataset.sec] = b.dataset.level; saveSharing(me.id, s);
   renderSharing(); toast(t('saved'));
 });
 
 /* ---------- Data management ---------- */
 $('#exportBtn').addEventListener('click', () => {
+  if (!me) return;
   const data = {
     exported_at: new Date().toISOString(),
     note: 'Fictional demo record — HDGF Agent prototype',
-    patient: { name: PATIENT.name, age: PATIENT.age, sex: pick(PATIENT.sex, lang), id: PATIENT.id },
-    sharing_with_gp: getSharing(),
-    access_requests: getRequests(),
-    record: localizedRecord(lang),
+    patient: { name: me.name, age: me.age, sex: pick(SEX[me.sex], lang), city: me.city, id: me.id },
+    sharing_with_gp: getSharing(me.id),
+    access_requests: getRequests().filter((r) => r.patientId === me.id),
+    trial_interest: getTrialFlags(me.id),
+    record: localizedRecord(me.id, lang),
   };
   const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
   const a = document.createElement('a'); a.href = url; a.download = 'hdgf-my-data.json'; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
-$('#resetBtn').addEventListener('click', () => { if (!confirm(t('confirmReset'))) return; resetDemo(); renderSharing(); toast(t('resetDone')); });
+$('#resetBtn').addEventListener('click', () => { if (!confirm(t('confirmReset'))) return; resetDemo(me ? me.id : undefined); renderSharing(); toast(t('resetDone')); });
 $('#wipeBtn').addEventListener('click', () => {
   if (!confirm(t('confirmWipe'))) return;
-  ['hdgf.consent', 'hdgf.requests', 'hdgf.engine', 'hdgf.model', 'hdgf.key', 'hdgf.lang'].forEach((k) => store.del(k));
-  store.del('hdgf.key', sessionStorage);
-  lang = getLang(); loadEngineForm(); renderText(); setStatus(''); toast(t('wipeDone'));
+  wipeAll();
+  location.href = 'app.html';
 });
 
 loadEngineForm();
