@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HDGF Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dark: #1C2B36;
+    --ink: #2A3A44;
+    --teal: #2E7D72;
+    --teal-lt: #4AA396;
+    --patient: #C4714A;
+    --gp: #3A6E8C;
+    --gold: #B8923A;
+    --bg: #FAFAF7;
+    --bg-alt: #F3F1EA;
+    --line: #E2DFD4;
+    --muted: #6B7680;
+    --white: #FFFFFF;
+    --accent: var(--patient);
+  }
+  body.mode-physician { --accent: var(--gp); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--ink);
+    line-height: 1.55; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column;
+  }
+  h1, h2, h3, .serif { font-family: 'Source Serif 4', Georgia, serif; }
+  button { font-family: inherit; }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    display: flex; align-items: center; gap: 16px; padding: 12px 20px;
+    background: var(--dark); color: var(--white); flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; color: var(--white); text-decoration: none; }
+  .brand strong { font-family: 'Source Serif 4', serif; font-size: 18px; font-weight: 600; }
+  .brand span { font-size: 11px; letter-spacing: 1.5px; color: var(--teal-lt); text-transform: uppercase; font-weight: 600; }
+  .mode-switch { display: flex; background: rgba(255,255,255,0.08); border-radius: 20px; padding: 3px; margin-left: auto; }
+  .mode-switch button {
+    border: 0; background: transparent; color: #B8C4C8; font-size: 13px; font-weight: 600;
+    padding: 7px 16px; border-radius: 17px; cursor: pointer; transition: all 0.2s ease;
+  }
+  .mode-switch button.active { background: var(--white); color: var(--dark); }
+  .engine-btn {
+    border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #C8D4D6; font-size: 12px;
+    padding: 7px 12px; border-radius: 16px; cursor: pointer; display: flex; align-items: center; gap: 7px;
+  }
+  .engine-btn:hover { border-color: var(--teal-lt); }
+  .engine-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
+  .engine-dot.live { background: #5CC48A; }
+  .back-link { font-size: 12px; color: #8A9A9E; text-decoration: none; }
+  .back-link:hover { color: var(--teal-lt); }
+
+  .notice {
+    font-size: 12px; color: var(--muted); background: var(--bg-alt); border-bottom: 1px solid var(--line);
+    padding: 7px 20px; text-align: center;
+  }
+
+  /* ---------- Layout ---------- */
+  .main { flex: 1; display: grid; grid-template-columns: 380px 1fr; min-height: 0; }
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .side { max-height: 32vh; border-right: 0; border-bottom: 1px solid var(--line); }
+  }
+  .side { overflow-y: auto; border-right: 1px solid var(--line); background: var(--white); padding: 20px 18px 30px; }
+  .side-head { margin-bottom: 16px; }
+  .side-eyebrow { font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; color: var(--accent); }
+  .side-title { font-size: 20px; font-weight: 600; color: var(--dark); margin-top: 2px; }
+  .side-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+  .card { border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin-bottom: 10px; background: var(--white); }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .card-head h4 { font-size: 13px; font-weight: 600; color: var(--dark); }
+  .card ul { list-style: none; }
+  .card li { font-size: 12.5px; color: var(--ink); padding: 2px 0; display: flex; justify-content: space-between; gap: 10px; }
+  .card li span.m { color: var(--muted); white-space: nowrap; }
+  .card.locked { background: var(--bg-alt); border-style: dashed; }
+  .card.locked p { font-size: 12px; color: var(--muted); }
+  .card.private { border-left: 3px solid var(--patient); }
+  .spark { display: block; margin: 4px 0 2px; }
+  .flag { font-size: 10.5px; font-weight: 700; color: var(--patient); }
+
+  .pill { font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+  .pill.shared { background: #E3F1EE; color: var(--teal); }
+  .pill.private { background: #F6E8E0; color: var(--patient); }
+  .pill.pending { background: #F5EEDB; color: #8A6A1E; }
+
+  /* toggle */
+  .toggle { position: relative; width: 34px; height: 19px; flex: 0 0 auto; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle span { position: absolute; inset: 0; background: #CFCBC0; border-radius: 10px; cursor: pointer; transition: background 0.2s ease; }
+  .toggle span::before { content: ""; position: absolute; left: 2px; top: 2px; width: 15px; height: 15px; background: var(--white); border-radius: 50%; transition: transform 0.2s ease; }
+  .toggle input:checked + span { background: var(--teal); }
+  .toggle input:checked + span::before { transform: translateX(15px); }
+  .toggle input:focus-visible + span { outline: 2px solid var(--teal-lt); outline-offset: 2px; }
+  .consent-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--bg-alt); font-size: 12.5px; }
+  .consent-row:last-child { border-bottom: 0; }
+  .consent-row small { display: block; color: var(--muted); font-size: 11px; }
+
+  .req { background: #FBF6E9; border: 1px solid #E8D9AE; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-size: 12.5px; }
+  .req p { margin-bottom: 8px; }
+  .req-actions { display: flex; gap: 8px; }
+  .btn { border: 1px solid var(--line); background: var(--white); color: var(--ink); font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 14px; cursor: pointer; }
+  .btn:hover { border-color: var(--teal); color: var(--teal); }
+  .btn.primary { background: var(--teal); border-color: var(--teal); color: var(--white); }
+  .btn.primary:hover { background: #276B61; color: var(--white); }
+
+  .section-gap { margin-top: 20px; }
+  .section-label { font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+
+  /* ---------- Chat ---------- */
+  .chat { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+  .log { flex: 1; overflow-y: auto; padding: 24px 28px 12px; }
+  @media (max-width: 600px) { .log { padding: 18px 16px 10px; } }
+  .msg { max-width: 760px; margin: 0 auto 18px; display: flex; gap: 12px; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; color: var(--white); font-size: 12px; font-weight: 700; }
+  .msg.agent .avatar { background: var(--accent); }
+  .msg.user { flex-direction: row-reverse; }
+  .msg.user .avatar { background: #9AA6AC; }
+  .bubble { font-size: 14px; min-width: 0; }
+  .msg.user .bubble { background: var(--dark); color: var(--white); padding: 10px 14px; border-radius: 14px 14px 2px 14px; max-width: 80%; white-space: pre-wrap; }
+  .msg.agent .bubble { flex: 1; }
+  .bubble p { margin-bottom: 8px; }
+  .bubble p:last-child { margin-bottom: 0; }
+  .bubble ul, .bubble ol { margin: 4px 0 10px 20px; }
+  .bubble li { margin-bottom: 3px; }
+  .bubble h4 { font-size: 13.5px; font-weight: 700; color: var(--dark); margin: 12px 0 4px; }
+  .bubble h4:first-child { margin-top: 0; }
+  .bubble code { font-size: 12px; background: var(--bg-alt); padding: 1px 5px; border-radius: 3px; }
+  .bubble .note { font-size: 12px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 10px; margin-top: 10px; }
+
+  .trace { margin-bottom: 8px; display: flex; flex-direction: column; gap: 3px; }
+  .step { font-size: 11.5px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; display: flex; align-items: center; gap: 7px; }
+  .step::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--teal-lt); flex: 0 0 auto; }
+  .step.denied::before { background: var(--patient); }
+  .step.denied { color: var(--patient); }
+  .step.run::before { animation: blink 1s ease-in-out infinite; }
+  @keyframes blink { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+  .cursor::after { content: "▍"; color: var(--accent); animation: blink 1s ease-in-out infinite; }
+  .confirm-card { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; margin: 8px 0; background: var(--bg-alt); font-size: 13px; }
+  .confirm-card .req-actions { margin-top: 8px; }
+  .err { color: #A0412A; font-size: 13px; }
+
+  .composer { border-top: 1px solid var(--line); background: var(--white); padding: 12px 20px 16px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; max-width: 760px; margin: 0 auto 10px; }
+  .chip { font-size: 12px; padding: 6px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; transition: all 0.2s ease; }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .input-row { display: flex; gap: 10px; max-width: 760px; margin: 0 auto; }
+  .input-row textarea {
+    flex: 1; resize: none; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+    font-family: inherit; font-size: 14px; color: var(--ink); background: var(--bg); min-height: 44px; max-height: 140px;
+  }
+  .input-row textarea:focus { outline: none; border-color: var(--accent); }
+  .send { border: 0; background: var(--accent); color: var(--white); border-radius: 10px; padding: 0 18px; font-weight: 600; font-size: 13px; cursor: pointer; }
+  .send:disabled { opacity: 0.5; cursor: default; }
+
+  /* ---------- Settings dialog ---------- */
+  dialog { border: 0; border-radius: 8px; padding: 0; max-width: 480px; width: calc(100% - 32px); box-shadow: 0 20px 60px rgba(0,0,0,0.25); color: var(--ink); }
+  dialog::backdrop { background: rgba(20,30,38,0.5); }
+  .dlg { padding: 22px 24px; }
+  .dlg h3 { font-size: 18px; color: var(--dark); margin-bottom: 14px; }
+  .dlg label { display: block; font-size: 12.5px; font-weight: 600; margin: 12px 0 5px; color: var(--dark); }
+  .dlg input[type=password], .dlg select { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: inherit; background: var(--bg); }
+  .radio-row { display: flex; gap: 10px; }
+  .radio-row label { flex: 1; margin: 0; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; cursor: pointer; font-weight: 500; }
+  .radio-row label:has(input:checked) { border-color: var(--teal); background: #F0F7F5; }
+  .radio-row small { display: block; color: var(--muted); font-weight: 400; font-size: 11.5px; margin-top: 2px; }
+  .dlg .check { display: flex; align-items: center; gap: 8px; font-weight: 400; }
+  .dlg .fine { font-size: 11.5px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+  .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+  #apiFields[hidden] { display: none; }
+  @media (max-width: 900px) {
+    .chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+    .chip { flex: 0 0 auto; }
+  }
+</style>
+</head>
+<body class="mode-patient">
+
+<header class="topbar">
+  <a class="brand" href="index.html"><strong>HDGF Agent</strong><span>Prototype</span></a>
+  <a class="back-link" href="index.html">← About the framework</a>
+  <div class="mode-switch" role="tablist" aria-label="Mode">
+    <button type="button" class="active" data-mode="patient" role="tab" aria-selected="true">Patient</button>
+    <button type="button" data-mode="physician" role="tab" aria-selected="false">Physician</button>
+  </div>
+  <button type="button" class="engine-btn" id="engineBtn"><span class="engine-dot" id="engineDot"></span><span id="engineLabel">Demo mode</span></button>
+</header>
+<div class="notice">Prototype with a fictional patient. Not medical advice. Do not enter real patient information.</div>
+
+<div class="main">
+  <aside class="side" id="side"></aside>
+  <section class="chat">
+    <div class="log" id="log" aria-live="polite"></div>
+    <div class="composer">
+      <div class="chips" id="chips"></div>
+      <form class="input-row" id="form">
+        <textarea id="input" rows="1" placeholder="Ask the agent…" aria-label="Message"></textarea>
+        <button class="send" id="send" type="submit">Send</button>
+      </form>
+    </div>
+  </section>
+</div>
+
+<dialog id="settings">
+  <form class="dlg" method="dialog" id="settingsForm">
+    <h3>Agent engine</h3>
+    <div class="radio-row">
+      <label><input type="radio" name="engine" value="demo" checked> Demo<small>Scripted responses. No key needed.</small></label>
+      <label><input type="radio" name="engine" value="api"> Claude API<small>Live model with your own key.</small></label>
+    </div>
+    <div id="apiFields" hidden>
+      <label for="apiKey">Anthropic API key</label>
+      <input type="password" id="apiKey" autocomplete="off" placeholder="sk-ant-…">
+      <label for="model">Model</label>
+      <select id="model">
+        <option value="claude-opus-5">Claude Opus 5</option>
+        <option value="claude-sonnet-5">Claude Sonnet 5</option>
+      </select>
+      <label class="check"><input type="checkbox" id="rememberKey"> Remember key in this browser</label>
+      <p class="fine">The key is sent directly from this browser to api.anthropic.com and is not stored anywhere else. Without “remember”, it is kept only for this tab. Avoid using a key on a shared computer.</p>
+    </div>
+    <div class="dlg-actions">
+      <button class="btn" value="cancel" type="submit">Cancel</button>
+      <button class="btn primary" value="save" type="submit" id="saveSettings">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module">
+/* =========================================================
+   Fictional patient record (demo data only)
+   ========================================================= */
+const PATIENT = { name: 'Mira Kim', short: 'Mira', age: 68, sex: 'Female', id: 'HDGF-0417' };
+const GP = { name: 'Dr. Hana Park', role: 'Primary care physician (GP)' };
+
+const SECTIONS = {
+  conditions: { label: 'Conditions', desc: 'Diagnoses and problem list' },
+  medications: { label: 'Medications', desc: 'Current prescriptions' },
+  labs: { label: 'Lab results', desc: 'HbA1c, kidney function, lipids' },
+  vitals: { label: 'Home blood pressure', desc: 'Home monitor readings' },
+  wearable: { label: 'Wearable data', desc: 'Steps, sleep, resting heart rate' },
+  visits: { label: 'Visit history', desc: 'Encounters across providers' },
+  journal: { label: 'Personal journal', desc: 'Your own notes' },
+};
+
+const RECORD = {
+  conditions: [
+    { name: 'Type 2 diabetes', since: '2014' },
+    { name: 'Hypertension', since: '2011' },
+    { name: 'Hyperlipidaemia', since: '2016' },
+    { name: 'Osteoarthritis, right knee', since: '2021' },
+  ],
+  medications: [
+    { name: 'Metformin', dose: '1000 mg twice daily', purpose: 'blood glucose' },
+    { name: 'Amlodipine', dose: '5 mg once daily', purpose: 'blood pressure' },
+    { name: 'Atorvastatin', dose: '20 mg once daily', purpose: 'cholesterol' },
+    { name: 'Acetaminophen', dose: '500 mg as needed', purpose: 'knee pain' },
+  ],
+  labs: {
+    hba1c: [
+      { date: '2025-10', value: 7.8 }, { date: '2026-01', value: 7.5 },
+      { date: '2026-04', value: 7.2 }, { date: '2026-08', value: 7.4 },
+    ],
+    egfr: [{ date: '2025-10', value: 74 }, { date: '2026-08', value: 68 }],
+    ldl: [{ date: '2025-10', value: 118 }, { date: '2026-08', value: 96 }],
+    uacr: [{ date: '2026-08', value: 22 }],
+  },
+  vitals: { period: 'last 30 days', homeAvg: '138/84', readings: 41, clinic: { date: '2026-08-12', value: '142/86' } },
+  wearable: {
+    steps: { now: 4200, before: 6100 },
+    sleep: { now: '5 h 40 min', before: '6 h 50 min' },
+    rhr: { now: 72, before: 66 },
+    window: 'last 30 days vs. 3 months ago',
+  },
+  visits: [
+    { date: '2026-08-12', where: 'GP — Dr. Hana Park', what: 'Diabetes and blood pressure review' },
+    { date: '2026-05-03', where: 'Orthopaedics — City Hospital', what: 'Right knee pain; X-ray, physiotherapy referral' },
+    { date: '2026-01-20', where: 'GP — Dr. Hana Park', what: 'Routine review; HbA1c improving' },
+  ],
+  journal: [
+    { date: '2026-09-02', text: 'Caring for my husband since his dementia diagnosis in the spring. Hard to find time for walks.' },
+    { date: '2026-09-14', text: 'Skipping lunch some days. Sleeping badly. Knee worse on the stairs.' },
+  ],
+};
+
+/* =========================================================
+   State (consent is the patient's; persisted per browser)
+   ========================================================= */
+const DEFAULT_CONSENT = { conditions: true, medications: true, labs: true, vitals: true, wearable: false, visits: true, journal: false };
+const store = {
+  get(k, storage = localStorage) { try { return storage.getItem(k); } catch { return null; } },
+  set(k, v, storage = localStorage) { try { storage.setItem(k, v); } catch {} },
+  del(k, storage = localStorage) { try { storage.removeItem(k); } catch {} },
+};
+let consent = (() => { try { return { ...DEFAULT_CONSENT, ...JSON.parse(store.get('hdgf.consent') || '{}') }; } catch { return { ...DEFAULT_CONSENT }; } })();
+let requests = (() => { try { return JSON.parse(store.get('hdgf.requests') || '[]'); } catch { return []; } })();
+let credits = 1240;
+let mode = 'patient';
+let busy = false;
+const engine = {
+  kind: store.get('hdgf.engine') || 'demo',
+  key: store.get('hdgf.key') || store.get('hdgf.key', sessionStorage) || '',
+  model: store.get('hdgf.model') || 'claude-opus-5',
+};
+if (engine.kind === 'api' && !engine.key) engine.kind = 'demo';
+const histories = { patient: [], physician: [] };   // API conversation history per mode
+const logs = { patient: [], physician: [] };        // rendered chat nodes per mode
+
+function saveConsent() { store.set('hdgf.consent', JSON.stringify(consent)); }
+function saveRequests() { store.set('hdgf.requests', JSON.stringify(requests)); }
+
+/* =========================================================
+   Helpers
+   ========================================================= */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const last = (arr) => arr[arr.length - 1];
+
+// Minimal markdown: headings (####), bullet/numbered lists, bold, italics, inline code, paragraphs.
+function md(src) {
+  const lines = esc(src).split('\n');
+  let html = '', list = null;
+  const inline = (t) => t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*(?!\s)(.+?)\*/g, '$1<em>$2</em>').replace(/`(.+?)`/g, '<code>$1</code>');
+  const close = () => { if (list) { html += `</${list}>`; list = null; } };
+  for (const raw of lines) {
+    const l = raw.trimEnd();
+    let m;
+    if ((m = l.match(/^#{1,6}\s+(.*)/))) { close(); html += `<h4>${inline(m[1])}</h4>`; }
+    else if ((m = l.match(/^\s*[-•]\s+(.*)/))) { if (list !== 'ul') { close(); html += '<ul>'; list = 'ul'; } html += `<li>${inline(m[1])}</li>`; }
+    else if ((m = l.match(/^\s*\d+[.)]\s+(.*)/))) { if (list !== 'ol') { close(); html += '<ol>'; list = 'ol'; } html += `<li>${inline(m[1])}</li>`; }
+    else if (l.startsWith('&gt; ')) { close(); html += `<p class="note">${inline(l.slice(5))}</p>`; }
+    else if (!l.trim()) { close(); }
+    else { close(); html += `<p>${inline(l)}</p>`; }
+  }
+  close();
+  return html;
+}
+
+function sparkline(points, { w = 120, h = 28, target } = {}) {
+  const vals = points.map((p) => p.value);
+  const lo = Math.min(...vals, target ?? Infinity) - 0.2, hi = Math.max(...vals, target ?? -Infinity) + 0.2;
+  const x = (i) => 4 + (i * (w - 8)) / (points.length - 1 || 1);
+  const y = (v) => h - 4 - ((v - lo) / (hi - lo || 1)) * (h - 8);
+  const path = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(' ');
+  const t = target != null ? `<line x1="0" x2="${w}" y1="${y(target)}" y2="${y(target)}" stroke="#B8923A" stroke-dasharray="3 3" stroke-width="1"/>` : '';
+  const dots = points.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.value)}" r="2.2" fill="#2E7D72"/>`).join('');
+  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${t}<path d="${path}" fill="none" stroke="#2E7D72" stroke-width="1.5"/>${dots}</svg>`;
+}
+
+/* =========================================================
+   Record access — the single gate used by BOTH demo and API.
+   In physician mode, unshared sections are never returned.
+   ========================================================= */
+function readSection(section, who = mode) {
+  if (!SECTIONS[section]) return { ok: false, error: `Unknown section "${section}".` };
+  if (who === 'physician' && !consent[section]) return { ok: false, denied: true, error: `Not shared by the patient. ${GP.name} cannot view "${SECTIONS[section].label}" unless ${PATIENT.short} grants access.` };
+  return { ok: true, section, data: RECORD[section] };
+}
+function sharingSummary() {
+  return Object.keys(SECTIONS).map((k) => ({ section: k, label: SECTIONS[k].label, shared_with_gp: !!consent[k] }));
+}
+
+/* =========================================================
+   Side panel rendering
+   ========================================================= */
+function sectionBody(key) {
+  const d = RECORD[key];
+  switch (key) {
+    case 'conditions': return `<ul>${d.map((c) => `<li>${esc(c.name)}<span class="m">since ${c.since}</span></li>`).join('')}</ul>`;
+    case 'medications': return `<ul>${d.map((m) => `<li>${esc(m.name)}<span class="m">${esc(m.dose)}</span></li>`).join('')}</ul>`;
+    case 'labs': {
+      const a = last(d.hba1c);
+      return `<ul><li>HbA1c <span class="m">${a.value}% · ${a.date}</span></li></ul>${sparkline(d.hba1c, { target: 7 })}
+        <ul><li>eGFR <span class="m">${last(d.egfr).value} mL/min/1.73m² (was ${d.egfr[0].value})</span></li>
+        <li>LDL cholesterol <span class="m">${last(d.ldl).value} mg/dL</span></li>
+        <li>Urine albumin/creatinine <span class="m">${last(d.uacr).value} mg/g</span></li></ul>`;
+    }
+    case 'vitals': return `<ul><li>Home average (${d.period}) <span class="m">${d.homeAvg} mmHg</span></li><li>Readings <span class="m">${d.readings}</span></li><li>Clinic ${d.clinic.date}<span class="m">${d.clinic.value} mmHg</span></li></ul>`;
+    case 'wearable': return `<ul><li>Steps / day <span class="m">${d.steps.now.toLocaleString()} (was ${d.steps.before.toLocaleString()})</span></li><li>Sleep / night <span class="m">${d.sleep.now} (was ${d.sleep.before})</span></li><li>Resting HR <span class="m">${d.rhr.now} bpm (was ${d.rhr.before})</span></li></ul>`;
+    case 'visits': return `<ul>${d.map((v) => `<li>${esc(v.what)}<span class="m">${v.date}</span></li>`).join('')}</ul>`;
+    case 'journal': return `<ul>${d.map((j) => `<li style="display:block">${esc(j.text)} <span class="m">${j.date}</span></li>`).join('')}</ul>`;
+  }
+  return '';
+}
+
+function renderSide() {
+  const side = $('#side');
+  if (mode === 'patient') {
+    const pending = requests.filter((r) => r.status === 'pending');
+    side.innerHTML = `
+      <div class="side-head">
+        <div class="side-eyebrow">My health record</div>
+        <div class="side-title">${PATIENT.name}</div>
+        <div class="side-sub">${PATIENT.age} · ${PATIENT.sex} · GP: ${GP.name}</div>
+      </div>
+      ${pending.map((r) => `<div class="req"><p><strong>${esc(GP.name)}</strong> requests access to <strong>${esc(SECTIONS[r.section].label)}</strong>: ${esc(r.reason)}</p>
+        <div class="req-actions"><button class="btn primary" data-req="${r.id}" data-act="approve">Share</button><button class="btn" data-req="${r.id}" data-act="decline">Decline</button></div></div>`).join('')}
+      ${Object.keys(SECTIONS).map((k) => `
+        <div class="card ${k === 'journal' ? 'private' : ''}">
+          <div class="card-head"><h4>${SECTIONS[k].label}</h4><span class="pill ${consent[k] ? 'shared' : 'private'}">${consent[k] ? 'Shared with GP' : 'Only me'}</span></div>
+          ${sectionBody(k)}
+        </div>`).join('')}
+      <div class="section-gap">
+        <div class="section-label">Sharing with ${GP.name}</div>
+        <div class="card">
+          ${Object.keys(SECTIONS).map((k) => `
+            <div class="consent-row"><div>${SECTIONS[k].label}<small>${SECTIONS[k].desc}</small></div>
+              <label class="toggle"><input type="checkbox" data-consent="${k}" ${consent[k] ? 'checked' : ''} aria-label="Share ${SECTIONS[k].label}"><span></span></label></div>`).join('')}
+        </div>
+      </div>
+      <div class="section-gap">
+        <div class="section-label">Credits</div>
+        <div class="card"><div class="card-head"><h4>${credits.toLocaleString()} credits</h4><span class="pill shared">Illustrative</span></div>
+          <ul><li>Completed care plan with GP<span class="m">+200</span></li><li>Consistent home BP logging<span class="m">+80</span></li><li>Teleconsultation redeemed<span class="m">−150</span></li></ul></div>
+      </div>`;
+  } else {
+    const shared = Object.keys(SECTIONS).filter((k) => consent[k]);
+    const hidden = Object.keys(SECTIONS).filter((k) => !consent[k]);
+    side.innerHTML = `
+      <div class="side-head">
+        <div class="side-eyebrow">Shared by patient</div>
+        <div class="side-title">${PATIENT.name}</div>
+        <div class="side-sub">${PATIENT.age} · ${PATIENT.sex} · Viewing as ${GP.name}</div>
+      </div>
+      ${shared.map((k) => `<div class="card"><div class="card-head"><h4>${SECTIONS[k].label}</h4><span class="pill shared">Shared</span></div>${sectionBody(k)}</div>`).join('')}
+      ${hidden.map((k) => {
+        const p = requests.find((r) => r.section === k && r.status === 'pending');
+        return `<div class="card locked"><div class="card-head"><h4>${SECTIONS[k].label}</h4><span class="pill ${p ? 'pending' : 'private'}">${p ? 'Requested' : 'Not shared'}</span></div>
+          <p>The patient has not shared this category. Its contents are not visible to you or to the agent.</p></div>`;
+      }).join('')}`;
+  }
+}
+
+$('#side').addEventListener('change', (e) => {
+  const k = e.target.dataset.consent;
+  if (!k) return;
+  consent[k] = e.target.checked;
+  saveConsent();
+  renderSide();
+});
+$('#side').addEventListener('click', (e) => {
+  const id = e.target.dataset.req;
+  if (!id) return;
+  const r = requests.find((x) => x.id === id);
+  if (!r) return;
+  r.status = e.target.dataset.act === 'approve' ? 'approved' : 'declined';
+  if (r.status === 'approved') { consent[r.section] = true; saveConsent(); }
+  saveRequests();
+  renderSide();
+});
+
+/* =========================================================
+   Chat rendering
+   ========================================================= */
+function addUser(text) {
+  const el = document.createElement('div');
+  el.className = 'msg user';
+  el.innerHTML = `<div class="avatar">${mode === 'patient' ? 'MK' : 'HP'}</div><div class="bubble"></div>`;
+  el.querySelector('.bubble').textContent = text;
+  pushNode(el);
+}
+function addAgent() {
+  const el = document.createElement('div');
+  el.className = 'msg agent';
+  el.innerHTML = `<div class="avatar">AI</div><div class="bubble"><div class="trace"></div><div class="body cursor"></div></div>`;
+  pushNode(el);
+  const trace = el.querySelector('.trace'), body = el.querySelector('.body');
+  let text = '';
+  return {
+    step(label, cls = '') { const s = document.createElement('div'); s.className = `step ${cls}`; s.textContent = label; trace.appendChild(s); scroll(); return s; },
+    append(t) { text += t; body.innerHTML = md(text); scroll(); },
+    set(t) { text = t; body.innerHTML = md(text); scroll(); },
+    node(n) { el.querySelector('.bubble').appendChild(n); scroll(); },
+    error(t) { const p = document.createElement('p'); p.className = 'err'; p.textContent = t; el.querySelector('.bubble').appendChild(p); scroll(); },
+    done() { body.classList.remove('cursor'); },
+  };
+}
+function pushNode(el) { logs[mode].push(el); $('#log').appendChild(el); scroll(); }
+function scroll() { const l = $('#log'); l.scrollTop = l.scrollHeight; }
+function renderLog() {
+  const l = $('#log');
+  l.innerHTML = '';
+  if (!logs[mode].length) greet();
+  else logs[mode].forEach((n) => l.appendChild(n));
+  scroll();
+}
+function greet() {
+  const a = addAgent();
+  a.set(mode === 'patient'
+    ? `Hello ${PATIENT.short}. I'm your personal health agent. I can read your full record, explain what it means, help you prepare for visits, and manage who can see your data. **You decide what is shared** — nothing leaves your control without your consent.\n\nTry one of the suggestions below.`
+    : `Good morning, ${GP.name}. I can review what **${PATIENT.name}** has chosen to share with you, flag trends, and help you prepare questions for the parts of her life that her data does not show. I cannot see anything she has not shared.\n\nTry one of the suggestions below.`);
+  a.done();
+}
+
+const CHIPS = {
+  patient: [
+    'Explain my latest lab results',
+    'What changed in the last 3 months?',
+    'Prepare questions for my next GP visit',
+    'Who can see my data?',
+    'Review my medications',
+  ],
+  physician: [
+    'Summarise the shared record before the visit',
+    'Flag trends that need attention',
+    'What does the data not tell me?',
+    'Suggest conversation openers',
+    'Request wearable data from the patient',
+  ],
+};
+function renderChips() {
+  $('#chips').innerHTML = CHIPS[mode].map((c) => `<button type="button" class="chip">${esc(c)}</button>`).join('');
+}
+$('#chips').addEventListener('click', (e) => { if (e.target.classList.contains('chip')) submit(e.target.textContent); });
+
+/* =========================================================
+   Demo engine — scripted, but always reads through readSection()
+   ========================================================= */
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+async function stream(agent, text) {
+  const parts = text.split(/(\s+)/);
+  for (let i = 0; i < parts.length; i += 6) { agent.append(parts.slice(i, i + 6).join('')); await wait(18); }
+}
+async function tool(agent, label, fn) {
+  const s = agent.step(label, 'run');
+  await wait(320);
+  const r = fn();
+  s.classList.remove('run');
+  if (r && r.ok === false) { s.classList.add('denied'); s.textContent = `${label} → not shared`; }
+  return r;
+}
+
+const INTENTS = {
+  patient: [
+    { re: /lab|hba1c|a1c|result|kidney|egfr|cholesterol|검사/i, fn: pLabs },
+    { re: /change|last 3|recent|trend|달라|변화/i, fn: pChanges },
+    { re: /question|visit|prepare|appointment|질문|진료/i, fn: pQuestions },
+    { re: /who can|see my|shar|consent|privacy|공유|동의/i, fn: pSharing },
+    { re: /medic|drug|pill|prescri|약/i, fn: pMeds },
+  ],
+  physician: [
+    { re: /summar|brief|overview|요약/i, fn: dSummary },
+    { re: /flag|trend|attention|concern|추세/i, fn: dFlags },
+    { re: /not tell|missing|gap|beyond|모르/i, fn: dGaps },
+    { re: /opener|conversation|ask|question|talk|대화|질문/i, fn: dOpeners },
+    { re: /request|wearable|access|요청/i, fn: dRequest },
+  ],
+};
+
+async function runDemo(text, agent) {
+  const intent = INTENTS[mode].find((i) => i.re.test(text));
+  if (!intent) {
+    await stream(agent, `In demo mode I respond to the suggested tasks below. For open conversation, switch the engine to **Claude API** (top right) and add your own API key.`);
+    return;
+  }
+  await intent.fn(agent);
+}
+
+async function pLabs(a) {
+  const r = await tool(a, 'read_record("labs")', () => readSection('labs'));
+  const { hba1c, egfr, ldl, uacr } = r.data;
+  const h = last(hba1c), h0 = hba1c[hba1c.length - 2];
+  await stream(a, `#### HbA1c — average blood sugar over ~3 months
+Your latest HbA1c is **${h.value}%** (${h.date}), up slightly from ${h0.value}% in ${h0.date}. It came down from ${hba1c[0].value}% a year ago, so the overall direction since then is still better. Many adults with diabetes aim for below 7%, but the right target is individual — worth confirming yours with ${GP.name}.
+
+#### Kidney function
+- **eGFR ${last(egfr).value}** mL/min/1.73m² (was ${egfr[0].value}). This is in the mildly reduced range; a single change like this is common and is usually followed up with repeat testing.
+- **Urine albumin/creatinine ${last(uacr).value} mg/g** — below 30, which is the usual threshold for concern.
+
+#### Cholesterol
+- **LDL ${last(ldl).value} mg/dL**, down from ${ldl[0].value}. Your statin appears to be helping.
+
+> I explain results; I do not diagnose or change treatment. Please discuss any concerns with ${GP.name}.`);
+}
+
+async function pChanges(a) {
+  const labs = (await tool(a, 'read_record("labs")', () => readSection('labs'))).data;
+  const w = (await tool(a, 'read_record("wearable")', () => readSection('wearable'))).data;
+  const v = (await tool(a, 'read_record("vitals")', () => readSection('vitals'))).data;
+  await stream(a, `Comparing the last 30 days with three months ago:
+
+- **Activity:** about ${w.steps.now.toLocaleString()} steps a day, down from ${w.steps.before.toLocaleString()}.
+- **Sleep:** ${w.sleep.now} a night, down from ${w.sleep.before}. Resting heart rate rose from ${w.rhr.before} to ${w.rhr.now} bpm.
+- **Blood pressure:** home average ${v.homeAvg} mmHg. A common goal for people with diabetes is below 130/80.
+- **HbA1c:** ${labs.hba1c[2].value}% → ${last(labs.hba1c).value}%.
+
+These changes happened together. Data alone cannot say why — but you might. Has something changed in your routine recently? If you'd like, I can help you decide whether to share your wearable data or any context with ${GP.name} before your next visit.`);
+}
+
+async function pQuestions(a) {
+  await tool(a, 'read_record("labs")', () => readSection('labs'));
+  await tool(a, 'read_record("wearable")', () => readSection('wearable'));
+  await tool(a, 'read_record("journal")', () => readSection('journal'));
+  await stream(a, `Here is a short list you could bring to ${GP.name}:
+
+1. My HbA1c went up from 7.2% to 7.4%. What target is right for me?
+2. My home blood pressure averages 138/84. Should anything change?
+3. My kidney number (eGFR) dropped from 74 to 68. Does it need re-checking?
+4. My knee hurts more on stairs. What can I do so I can keep walking?
+5. I've been sleeping less and moving less. Could that be affecting my numbers?
+
+Your journal mentions caring for your husband and skipping meals. That is **private and not shared**. You don't have to share it in the app — but you may want to mention it in person. It could matter for your care, and ${GP.name} can only help with what she knows.`);
+}
+
+async function pSharing(a) {
+  await tool(a, 'list_sharing()', () => ({ ok: true }));
+  const s = sharingSummary();
+  const on = s.filter((x) => x.shared_with_gp).map((x) => x.label), off = s.filter((x) => !x.shared_with_gp).map((x) => x.label);
+  await stream(a, `**Shared with ${GP.name}:** ${on.join(', ') || 'nothing'}.
+**Only you:** ${off.join(', ') || 'nothing'}.
+
+Pharma, insurers and hospitals cannot see identified data. They can only query de-identified data through the gated API, and only where you have consented. You can change any setting in the **Sharing** panel on the left, at any time — and withdrawing consent takes effect immediately.`);
+}
+
+async function pMeds(a) {
+  const m = (await tool(a, 'read_record("medications")', () => readSection('medications'))).data;
+  await stream(a, `You have ${m.length} medications on record:
+
+${m.map((x) => `- **${x.name}** ${x.dose} — for ${x.purpose}`).join('\n')}
+
+If you've missed doses, noticed side effects, or are taking anything not listed here (including supplements), tell ${GP.name}. I can't change prescriptions or advise on doses.`);
+}
+
+async function dSummary(a) {
+  const lines = [];
+  const c = await tool(a, 'read_record("conditions")', () => readSection('conditions'));
+  if (c.ok) lines.push(`- **Conditions:** ${c.data.map((x) => x.name).join('; ')}.`);
+  const m = await tool(a, 'read_record("medications")', () => readSection('medications'));
+  if (m.ok) lines.push(`- **Medications:** ${m.data.map((x) => `${x.name} ${x.dose}`).join('; ')}.`);
+  const l = await tool(a, 'read_record("labs")', () => readSection('labs'));
+  if (l.ok) lines.push(`- **Labs:** HbA1c ${l.data.hba1c.map((x) => x.value).join(' → ')}%; eGFR ${l.data.egfr[0].value} → ${last(l.data.egfr).value}; LDL ${last(l.data.ldl).value} mg/dL; uACR ${last(l.data.uacr).value} mg/g.`);
+  const v = await tool(a, 'read_record("vitals")', () => readSection('vitals'));
+  if (v.ok) lines.push(`- **Home BP:** ${v.data.homeAvg} mmHg average over ${v.data.readings} readings (${v.data.period}).`);
+  const w = await tool(a, 'read_record("wearable")', () => readSection('wearable'));
+  if (w.ok) lines.push(`- **Wearable:** steps ${w.data.steps.before.toLocaleString()} → ${w.data.steps.now.toLocaleString()}/day; sleep ${w.data.sleep.before} → ${w.data.sleep.now}.`);
+  const hidden = Object.keys(SECTIONS).filter((k) => !consent[k]).map((k) => SECTIONS[k].label);
+  await stream(a, `#### Pre-visit brief — ${PATIENT.name}, ${PATIENT.age}
+${lines.join('\n') || '- The patient has not shared any clinical categories.'}
+
+${hidden.length ? `**Not shared:** ${hidden.join(', ')}. I have no access to these and have not inferred their contents.` : 'All categories are shared.'}`);
+}
+
+async function dFlags(a) {
+  const out = [];
+  const l = await tool(a, 'read_record("labs")', () => readSection('labs'));
+  if (l.ok) {
+    out.push(`- **HbA1c rose ${l.data.hba1c[2].value}% → ${last(l.data.hba1c).value}%** after a year of improvement.`);
+    out.push(`- **eGFR ${l.data.egfr[0].value} → ${last(l.data.egfr).value}** with normal uACR. Consider repeat testing to confirm the trend.`);
+  }
+  const v = await tool(a, 'read_record("vitals")', () => readSection('vitals'));
+  if (v.ok) out.push(`- **Home BP ${v.data.homeAvg}** is above a <130/80 goal.`);
+  const w = await tool(a, 'read_record("wearable")', () => readSection('wearable'));
+  if (w.ok) out.push(`- **Activity and sleep fell** at the same time (${w.data.steps.before.toLocaleString()} → ${w.data.steps.now.toLocaleString()} steps; ${w.data.sleep.before} → ${w.data.sleep.now}).`);
+  await stream(a, `${out.join('\n') || '- Nothing to flag in the shared data.'}
+
+These signals shift together, which suggests a common cause that the record does not capture. Before changing treatment, it may be worth exploring what has changed in her life.`);
+}
+
+async function dGaps(a) {
+  await tool(a, 'list_sharing()', () => ({ ok: true }));
+  const hidden = Object.keys(SECTIONS).filter((k) => !consent[k]).map((k) => SECTIONS[k].label);
+  await stream(a, `#### What the shared data cannot tell you
+${hidden.length ? `- **Unshared categories:** ${hidden.join(', ')}. I cannot see these, so I will not guess what they contain.\n` : ''}- **Private and sensitive context:** home situation, finances, housing, food access, safety. Records rarely capture these.
+- **Emotional context:** stress, grief or low mood can change sleep, eating and activity. A sensor can show the pattern, but not the reason.
+- **The embodied encounter:** her knee on examination, gait, how she looks and speaks today.
+
+The recent trends point to *something* changing. The most useful next step is likely a conversation, not another test.
+
+> Where the Resource Orchestrator asks “What resources can we combine for your goals?”, the Holistic Companion asks “What does your data not tell me?”`);
+}
+
+async function dOpeners(a) {
+  await tool(a, 'read_record("visits")', () => readSection('visits'));
+  await stream(a, `Open questions across the three non-digitizable domains:
+
+**Private and sensitive**
+- “Has anything changed at home in the last few months?”
+- “Is there anything at home that makes it harder to look after yourself?”
+
+**Emotional**
+- “How have you been sleeping — and how have you been feeling in yourself?”
+- “What has been hardest lately?”
+
+**Embodied**
+- Examine the right knee and watch her walk. The drop in activity may be partly pain-driven.
+
+End with shared decision-making: “What matters most to you over the next few months?”`);
+}
+
+async function dRequest(a) {
+  const key = 'wearable';
+  if (consent[key]) { await stream(a, `${PATIENT.short} already shares her wearable data with you.`); return; }
+  if (requests.some((r) => r.section === key && r.status === 'pending')) { await stream(a, `A request for wearable data is already pending with ${PATIENT.short}.`); return; }
+  await tool(a, 'request_access("wearable")', () => {
+    requests.push({ id: String(Date.now()), section: key, reason: 'to understand recent changes in blood sugar and blood pressure', status: 'pending' });
+    saveRequests();
+    return { ok: true };
+  });
+  renderSide();
+  await stream(a, `I've sent ${PATIENT.short} a consent request for **Wearable data**, with the reason. She will see it in her app and can approve or decline. Nothing is shared until she approves.
+
+> Switch to **Patient** mode to see the request from her side.`);
+}
+
+/* =========================================================
+   Claude API engine — tool use, streaming, consent-gated tools
+   ========================================================= */
+let Anthropic = null;
+async function sdk() {
+  if (!Anthropic) Anthropic = (await import('./vendor/anthropic-sdk-0.128.0.mjs')).default;
+  return new Anthropic({ apiKey: engine.key, dangerouslyAllowBrowser: true });
+}
+
+const SECTION_ENUM = Object.keys(SECTIONS);
+const TOOLS = {
+  patient: [
+    { name: 'read_record', description: 'Read one section of the patient\'s own health record.', input_schema: { type: 'object', properties: { section: { type: 'string', enum: SECTION_ENUM } }, required: ['section'], additionalProperties: false } },
+    { name: 'list_sharing', description: 'List which record sections the patient currently shares with their GP.', input_schema: { type: 'object', properties: {}, additionalProperties: false } },
+    { name: 'propose_sharing_change', description: 'Propose sharing or unsharing a section with the GP. The patient must confirm in the UI; this tool never changes consent by itself.', input_schema: { type: 'object', properties: { section: { type: 'string', enum: SECTION_ENUM }, share: { type: 'boolean' }, reason: { type: 'string' } }, required: ['section', 'share', 'reason'], additionalProperties: false } },
+  ],
+  physician: [
+    { name: 'read_record', description: 'Read one section of the patient\'s record. Returns an error if the patient has not shared that section.', input_schema: { type: 'object', properties: { section: { type: 'string', enum: SECTION_ENUM } }, required: ['section'], additionalProperties: false } },
+    { name: 'list_sharing', description: 'List which sections the patient has shared with this physician.', input_schema: { type: 'object', properties: {}, additionalProperties: false } },
+    { name: 'request_access', description: 'Send the patient a consent request for an unshared section, with a reason she will read.', input_schema: { type: 'object', properties: { section: { type: 'string', enum: SECTION_ENUM }, reason: { type: 'string' } }, required: ['section', 'reason'], additionalProperties: false } },
+  ],
+};
+
+function systemPrompt() {
+  const common = `This is a prototype of the Health Data Gravity Framework (HDGF). The patient and all data are fictional. Today is ${new Date().toISOString().slice(0, 10)}.
+Access the record only through the tools. Reply in the same language the user writes in. Keep answers concise and well structured, using short paragraphs and bullet lists.`;
+  if (mode === 'patient') return `${common}
+You are the personal health agent of ${PATIENT.name} (${PATIENT.age}, ${PATIENT.sex}). Her GP is ${GP.name}. You are talking with ${PATIENT.short}. You can read her whole record.
+Help her understand and use her own health data in plain language. Explain results and trends, help her prepare for visits, and help her decide what to share. She owns the data. Consent changes need her explicit confirmation, so propose them with propose_sharing_change.
+Do not diagnose, change medications or give doses. Refer clinical decisions to ${GP.name}. If something sounds urgent, tell her to seek care promptly.`;
+  return `${common}
+You are the clinical co-author assistant for ${GP.name}, ${GP.role}, preparing to see ${PATIENT.name} (${PATIENT.age}, ${PATIENT.sex}). You are talking with ${GP.name}.
+You can only see sections the patient has chosen to share. If a tool reports a section is not shared, say so plainly. Never guess, infer or hint at the contents of unshared sections. You may use request_access to ask the patient for a section, with a clear reason.
+Support the physician as a Holistic Companion. Summarise the shared data and flag trends. Also point out what the data cannot show: private and sensitive context, emotional context, and what only an in-person examination reveals. Suggest respectful, open questions for the visit. Support shared decision-making with the patient, not for her. Clinical decisions remain the physician's.`;
+}
+
+function runTool(name, input, agent) {
+  if (name === 'read_record') { const r = readSection(input.section); return r.ok ? r.data : { error: r.error }; }
+  if (name === 'list_sharing') return sharingSummary();
+  if (name === 'request_access' && mode === 'physician') {
+    if (!SECTIONS[input.section]) return { error: 'Unknown section.' };
+    if (consent[input.section]) return { result: 'Already shared.' };
+    requests.push({ id: String(Date.now()), section: input.section, reason: input.reason, status: 'pending' });
+    saveRequests(); renderSide();
+    return { result: 'Request sent. Nothing is shared until the patient approves.' };
+  }
+  if (name === 'propose_sharing_change' && mode === 'patient') {
+    if (!SECTIONS[input.section]) return { error: 'Unknown section.' };
+    const card = document.createElement('div');
+    card.className = 'confirm-card';
+    card.innerHTML = `<div><strong>${input.share ? 'Share' : 'Stop sharing'} ${esc(SECTIONS[input.section].label)}</strong> with ${esc(GP.name)}?</div><div style="font-size:12px;color:var(--muted)">${esc(input.reason || '')}</div>
+      <div class="req-actions"><button class="btn primary" data-a="yes">Confirm</button><button class="btn" data-a="no">Not now</button></div>`;
+    card.addEventListener('click', (e) => {
+      const act = e.target.dataset.a; if (!act) return;
+      if (act === 'yes') { consent[input.section] = !!input.share; saveConsent(); renderSide(); }
+      card.querySelector('.req-actions').innerHTML = `<span style="font-size:12px;color:var(--muted)">${act === 'yes' ? 'Updated.' : 'No change made.'}</span>`;
+    });
+    agent.node(card);
+    return { result: 'Proposal shown to the patient. Consent changes only if she confirms.' };
+  }
+  return { error: `Tool ${name} is not available in this mode.` };
+}
+
+// After a mid-output server-side fallback, drop model-internal blocks that precede the last fallback marker.
+function echoContent(content) {
+  const fi = content.map((b) => b.type).lastIndexOf('fallback');
+  if (fi < 0) return content;
+  return content.filter((b, i) => i > fi || b.type === 'text');
+}
+
+async function runApi(text, agent) {
+  const client = await sdk();
+  const hist = histories[mode];
+  const snap = hist.length;
+  hist.push({ role: 'user', content: text });
+  for (let turn = 0; turn < 8; turn++) {
+    const params = { model: engine.model, max_tokens: 16000, system: systemPrompt(), tools: TOOLS[mode], messages: hist };
+    if (engine.model === 'claude-opus-5') { params.betas = ['server-side-fallback-2026-07-01']; params.fallbacks = 'default'; }
+    const s = client.beta.messages.stream(params);
+    s.on('text', (t) => agent.append(t));
+    const msg = await s.finalMessage();
+    if (msg.stop_reason === 'refusal') { hist.length = snap; agent.error('The model declined this request. Try rephrasing.'); return; }
+    hist.push({ role: 'assistant', content: echoContent(msg.content) });
+    if (msg.stop_reason !== 'tool_use') { if (msg.stop_reason === 'max_tokens') agent.error('Response was cut off (length limit).'); return; }
+    const results = [];
+    for (const b of msg.content.filter((x) => x.type === 'tool_use')) {
+      const st = agent.step(`${b.name}(${b.input && b.input.section ? `"${b.input.section}"` : ''})`, 'run');
+      const out = runTool(b.name, b.input || {}, agent);
+      st.classList.remove('run');
+      if (out && out.error) { st.classList.add('denied'); st.textContent += ' → ' + (/not shared/i.test(out.error) ? 'not shared' : 'error'); }
+      results.push({ type: 'tool_result', tool_use_id: b.id, content: JSON.stringify(out), ...(out && out.error ? { is_error: true } : {}) });
+    }
+    hist.push({ role: 'user', content: results });
+    agent.append('\n\n');
+  }
+}
+
+function apiErrorText(e) {
+  const st = e && e.status;
+  if (st === 401) return 'Invalid API key. Check it in the engine settings.';
+  if (st === 429) return 'Rate limit reached. Please wait and try again.';
+  if (st === 400) return `Request rejected: ${e.message || 'bad request'}`;
+  if (st >= 500) return 'The API is temporarily unavailable. Try again shortly.';
+  return `Could not reach the API: ${(e && e.message) || e}`;
+}
+
+/* =========================================================
+   Submit
+   ========================================================= */
+async function submit(text) {
+  text = text.trim();
+  if (!text || busy) return;
+  busy = true; $('#send').disabled = true;
+  addUser(text);
+  const agent = addAgent();
+  const snap = histories[mode].length;
+  try {
+    if (engine.kind === 'api') await runApi(text, agent);
+    else await runDemo(text, agent);
+  } catch (e) {
+    histories[mode].length = snap;  // drop the failed turn so history stays valid
+    agent.error(apiErrorText(e));
+  } finally {
+    agent.done();
+    busy = false; $('#send').disabled = false;
+  }
+}
+$('#form').addEventListener('submit', (e) => { e.preventDefault(); const t = $('#input').value; $('#input').value = ''; autosize(); submit(t); });
+$('#input').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('#form').requestSubmit(); } });
+function autosize() { const t = $('#input'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 140) + 'px'; }
+$('#input').addEventListener('input', autosize);
+
+/* =========================================================
+   Mode + engine
+   ========================================================= */
+function setMode(m) {
+  if (busy) return;
+  mode = m;
+  document.body.className = `mode-${m}`;
+  document.querySelectorAll('.mode-switch button').forEach((b) => { const on = b.dataset.mode === m; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
+  $('#input').placeholder = m === 'patient' ? 'Ask about your health data…' : `Ask about ${PATIENT.short}'s shared record…`;
+  renderSide(); renderChips(); renderLog();
+}
+document.querySelectorAll('.mode-switch button').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+function renderEngine() {
+  const live = engine.kind === 'api';
+  $('#engineDot').classList.toggle('live', live);
+  $('#engineLabel').textContent = live ? `Claude API · ${engine.model.replace('claude-', '')}` : 'Demo mode';
+}
+const dlg = $('#settings');
+$('#engineBtn').addEventListener('click', () => {
+  dlg.querySelector(`input[value=${engine.kind}]`).checked = true;
+  $('#apiKey').value = engine.key;
+  $('#model').value = engine.model;
+  $('#rememberKey').checked = !!store.get('hdgf.key');
+  $('#apiFields').hidden = engine.kind !== 'api';
+  dlg.showModal();
+});
+dlg.querySelectorAll('input[name=engine]').forEach((r) => r.addEventListener('change', () => { $('#apiFields').hidden = r.value !== 'api' || !r.checked; }));
+dlg.addEventListener('close', () => {
+  if (dlg.returnValue !== 'save') return;
+  const kind = dlg.querySelector('input[name=engine]:checked').value;
+  const key = $('#apiKey').value.trim();
+  if (kind === 'api' && !key) { engine.kind = 'demo'; renderEngine(); return; }
+  engine.kind = kind; engine.key = key; engine.model = $('#model').value;
+  store.set('hdgf.engine', engine.kind); store.set('hdgf.model', engine.model);
+  store.del('hdgf.key'); store.del('hdgf.key', sessionStorage);
+  if (key) store.set('hdgf.key', key, $('#rememberKey').checked ? localStorage : sessionStorage);
+  histories.patient = []; histories.physician = [];
+  renderEngine();
+});
+
+renderEngine();
+setMode('patient');
+</script>
+</body>
+</html>
