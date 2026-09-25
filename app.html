@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HDGF Agent</title>
+<title>HDGF Agent Sign-in</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -12,915 +12,175 @@
     --gold: #B8923A; --bg: #FAFAF7; --bg-alt: #F3F1EA; --line: #E2DFD4; --muted: #6B7680; --white: #FFFFFF;
     --accent: var(--patient);
   }
-  body.mode-physician { --accent: var(--gp); }
+  body.role-physician { --accent: var(--gp); }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { height: 100%; }
-  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; }
-  h1, h2, h3, .serif { font-family: 'Source Serif 4', Georgia, serif; }
-  button { font-family: inherit; }
+  html, body { min-height: 100%; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  h1, h2 { font-family: 'Source Serif 4', Georgia, serif; }
+  button, input { font-family: inherit; }
 
-  /* ---------- Top bar ---------- */
-  .topbar { display: flex; align-items: center; gap: 14px; padding: 12px 20px; background: var(--dark); color: var(--white); flex-wrap: wrap; }
+  .wrap { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 860px) { .wrap { grid-template-columns: 1fr; } }
+
+  .intro { background: var(--dark); color: var(--white); padding: 40px 48px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  @media (max-width: 860px) { .intro { padding: 24px 20px 28px; } }
+  .intro::before { content: ""; position: absolute; top: -20%; right: -20%; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgba(46,125,114,0.28) 0%, transparent 70%); }
+  .intro > * { position: relative; }
   .brand { display: flex; align-items: baseline; gap: 10px; color: var(--white); text-decoration: none; }
-  .brand strong { font-family: 'Source Serif 4', serif; font-size: 18px; font-weight: 600; }
+  .brand strong { font-family: 'Source Serif 4', serif; font-size: 20px; font-weight: 600; }
   .brand span { font-size: 11px; letter-spacing: 1.5px; color: var(--teal-lt); text-transform: uppercase; font-weight: 600; }
-  .back-link { font-size: 12px; color: #8A9A9E; text-decoration: none; }
-  .back-link:hover { color: var(--teal-lt); }
-  .mode-switch { display: flex; background: rgba(255,255,255,0.08); border-radius: 20px; padding: 3px; margin-left: auto; }
-  .mode-switch button { border: 0; background: transparent; color: #B8C4C8; font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 17px; cursor: pointer; transition: all 0.2s ease; }
-  .mode-switch button.active { background: var(--white); color: var(--dark); }
-  .top-link { border: 1px solid rgba(255,255,255,0.2); color: #C8D4D6; font-size: 12px; padding: 7px 12px; border-radius: 16px; text-decoration: none; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
-  .top-link:hover { border-color: var(--teal-lt); }
-  .engine-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
-  .engine-dot.live { background: #5CC48A; }
-  .gear { width: 14px; height: 14px; }
+  .intro-body { margin: auto 0; max-width: 460px; padding: 40px 0; }
+  @media (max-width: 860px) { .intro-body { padding: 22px 0 0; } }
+  .intro h1 { font-size: clamp(28px, 3.4vw, 40px); font-weight: 600; line-height: 1.2; margin-bottom: 16px; }
+  .intro p { color: #B8C4C8; font-size: 15.5px; }
+  .intro ul { list-style: none; margin-top: 22px; display: grid; gap: 10px; }
+  @media (max-width: 860px) { .intro ul { display: none; } }
+  .intro li { font-size: 14px; color: #C8D4D6; padding-left: 18px; position: relative; }
+  .intro li::before { content: ""; position: absolute; left: 0; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--teal-lt); }
+  .intro-foot { font-size: 12px; color: #7A8A8E; }
+  .intro-foot a { color: #A8BEC4; }
+  @media (max-width: 860px) { .intro-foot { display: none; } }
 
-  .notice { font-size: 12px; color: var(--muted); background: var(--bg-alt); border-bottom: 1px solid var(--line); padding: 7px 20px; text-align: center; }
+  .panel { padding: 40px 48px; display: flex; flex-direction: column; }
+  @media (max-width: 860px) { .panel { padding: 24px 20px 40px; } }
+  .panel-top { display: flex; justify-content: flex-end; gap: 8px; }
+  .lang { display: inline-flex; border: 1px solid var(--line); border-radius: 16px; padding: 2px; background: var(--white); }
+  .lang button { border: 0; background: transparent; font-size: 12px; font-weight: 600; color: var(--muted); padding: 5px 11px; border-radius: 13px; cursor: pointer; }
+  .lang button[aria-pressed=true] { background: var(--dark); color: var(--white); }
+  .card { margin: auto 0; max-width: 440px; width: 100%; align-self: center; padding: 30px 0; }
+  .card h2 { font-size: 26px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+  .card .sub { font-size: 13.5px; color: var(--muted); margin-bottom: 22px; }
 
-  /* ---------- Layout ---------- */
-  .main { flex: 1; display: grid; grid-template-columns: 390px 1fr; min-height: 0; }
-  @media (max-width: 900px) {
-    .main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-    .side { max-height: 32vh; border-right: 0; border-bottom: 1px solid var(--line); }
-  }
-  .side { overflow-y: auto; border-right: 1px solid var(--line); background: var(--white); padding: 20px 18px 30px; }
-  .side-head { margin-bottom: 16px; }
-  .side-eyebrow { font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; color: var(--accent); }
-  .side-title { font-size: 20px; font-weight: 600; color: var(--dark); margin-top: 2px; }
-  .side-sub { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg-alt); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+  .roles button { border: 0; background: transparent; padding: 10px 8px; border-radius: 7px; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .roles button[aria-selected=true] { background: var(--white); color: var(--dark); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
 
-  .card { border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin-bottom: 10px; background: var(--white); }
-  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
-  .card-head h4 { font-size: 13px; font-weight: 600; color: var(--dark); }
-  .card ul { list-style: none; }
-  .card li { font-size: 12.5px; color: var(--ink); padding: 2px 0; display: flex; justify-content: space-between; gap: 10px; }
-  .card li span.m { color: var(--muted); white-space: nowrap; }
-  .card li.block { display: block; }
-  .card.locked { background: var(--bg-alt); border-style: dashed; }
-  .card.locked p { font-size: 12px; color: var(--muted); }
-  .card.summary { border-left: 3px solid var(--gold); }
-  .spark { display: block; margin: 4px 0 2px; }
-  .gp-sees { margin-top: 8px; background: #FBF6E9; border-radius: 5px; padding: 8px 10px; font-size: 12px; color: var(--ink); }
-  .gp-sees b { display: block; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: #8A6A1E; margin-bottom: 2px; }
-  .summary-text { font-size: 12.5px; color: var(--ink); }
-  .link-btn { border: 0; background: none; color: var(--teal); font-size: 12px; font-weight: 600; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
+  .label { font-size: 12.5px; font-weight: 600; color: var(--dark); margin-bottom: 8px; }
+  .accounts { display: grid; gap: 8px; margin-bottom: 18px; }
+  .acct { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; cursor: pointer; background: var(--white); position: relative; }
+  .acct:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .acct input { position: absolute; opacity: 0; pointer-events: none; }
+  .acct:has(input:focus-visible) { outline: 2px solid var(--teal-lt); outline-offset: 2px; }
+  .av { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex: 0 0 auto; }
+  .acct strong { display: block; font-size: 14px; color: var(--dark); }
+  .acct small { display: block; font-size: 12px; color: var(--muted); }
 
-  .pill { font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
-  .pill.full { background: #E3F1EE; color: var(--teal); }
-  .pill.summary { background: #F5EEDB; color: #8A6A1E; }
-  .pill.private { background: #F6E8E0; color: var(--patient); }
-  .pill.pending { background: #E6EEF4; color: var(--gp); }
-
-  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 16px; padding: 2px; background: var(--bg); }
-  .seg button { border: 0; background: transparent; font-size: 11px; font-weight: 600; color: var(--muted); padding: 4px 8px; border-radius: 13px; cursor: pointer; white-space: nowrap; }
-  .seg button[aria-pressed=true][data-level=full] { background: var(--teal); color: var(--white); }
-  .seg button[aria-pressed=true][data-level=summary] { background: var(--gold); color: var(--white); }
-  .seg button[aria-pressed=true][data-level=private] { background: var(--patient); color: var(--white); }
-  .share-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--bg-alt); font-size: 12.5px; flex-wrap: wrap; }
-  .share-row:last-child { border-bottom: 0; }
-
-  .req { background: #FBF6E9; border: 1px solid #E8D9AE; border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-size: 12.5px; }
-  .req p { margin-bottom: 8px; }
-  .req-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-  .btn { border: 1px solid var(--line); background: var(--white); color: var(--ink); font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 14px; cursor: pointer; }
-  .btn:hover { border-color: var(--teal); color: var(--teal); }
-  .btn.primary { background: var(--teal); border-color: var(--teal); color: var(--white); }
-  .btn.primary:hover { background: #276B61; color: var(--white); }
-  .btn.gold { background: var(--gold); border-color: var(--gold); color: var(--white); }
-
-  .section-gap { margin-top: 20px; }
-  .section-label { font-size: 10.5px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; color: var(--muted); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: baseline; }
-  .section-label a { font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--teal); font-weight: 600; text-decoration: none; }
-
-  /* ---------- Chat ---------- */
-  .chat { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
-  .log { flex: 1; overflow-y: auto; padding: 24px 28px 12px; }
-  @media (max-width: 600px) { .log { padding: 18px 16px 10px; } }
-  .msg { max-width: 760px; margin: 0 auto 18px; display: flex; gap: 12px; }
-  .avatar { width: 30px; height: 30px; border-radius: 50%; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; color: var(--white); font-size: 12px; font-weight: 700; }
-  .msg.agent .avatar { background: var(--accent); }
-  .msg.user { flex-direction: row-reverse; }
-  .msg.user .avatar { background: #9AA6AC; }
-  .bubble { font-size: 14px; min-width: 0; }
-  .msg.user .bubble { background: var(--dark); color: var(--white); padding: 10px 14px; border-radius: 14px 14px 2px 14px; max-width: 80%; white-space: pre-wrap; }
-  .msg.agent .bubble { flex: 1; }
-  .bubble p { margin-bottom: 8px; }
-  .bubble p:last-child { margin-bottom: 0; }
-  .bubble ul, .bubble ol { margin: 4px 0 10px 20px; }
-  .bubble li { margin-bottom: 3px; }
-  .bubble h4 { font-size: 13.5px; font-weight: 700; color: var(--dark); margin: 12px 0 4px; }
-  .bubble h4:first-child { margin-top: 0; }
-  .bubble code { font-size: 12px; background: var(--bg-alt); padding: 1px 5px; border-radius: 3px; }
-  .bubble .note { font-size: 12px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 10px; margin-top: 10px; }
-  .trace { margin-bottom: 8px; display: flex; flex-direction: column; gap: 3px; }
-  .step { font-size: 11.5px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; display: flex; align-items: center; gap: 7px; }
-  .step::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--teal-lt); flex: 0 0 auto; }
-  .step.summary::before { background: var(--gold); }
-  .step.summary { color: #8A6A1E; }
-  .step.denied::before { background: var(--patient); }
-  .step.denied { color: var(--patient); }
-  .step.run::before { animation: blink 1s ease-in-out infinite; }
-  @keyframes blink { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
-  .cursor::after { content: "▍"; color: var(--accent); animation: blink 1s ease-in-out infinite; }
-  .confirm-card { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; margin: 8px 0; background: var(--bg-alt); font-size: 13px; }
-  .confirm-card .req-actions { margin-top: 8px; }
-  .err { color: #A0412A; font-size: 13px; }
-
-  .composer { border-top: 1px solid var(--line); background: var(--white); padding: 12px 20px 16px; }
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; max-width: 760px; margin: 0 auto 10px; }
-  .chip { font-size: 12px; padding: 6px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; transition: all 0.2s ease; }
-  .chip:hover { border-color: var(--accent); color: var(--accent); }
-  @media (max-width: 900px) { .chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; } .chip { flex: 0 0 auto; } }
-  .input-row { display: flex; gap: 10px; max-width: 760px; margin: 0 auto; }
-  .input-row textarea { flex: 1; resize: none; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-family: inherit; font-size: 14px; color: var(--ink); background: var(--bg); min-height: 44px; max-height: 140px; }
-  .input-row textarea:focus { outline: none; border-color: var(--accent); }
-  .send { border: 0; background: var(--accent); color: var(--white); border-radius: 10px; padding: 0 18px; font-weight: 600; font-size: 13px; cursor: pointer; }
-  .send:disabled { opacity: 0.5; cursor: default; }
+  .field { margin-bottom: 14px; }
+  .field input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 14px; background: var(--bg-alt); color: var(--muted); }
+  .go { width: 100%; border: 0; background: var(--accent); color: var(--white); font-size: 15px; font-weight: 600; padding: 13px; border-radius: 10px; cursor: pointer; margin-top: 4px; }
+  .go:hover { filter: brightness(0.95); }
+  .fine { font-size: 12px; color: var(--muted); margin-top: 14px; line-height: 1.5; }
+  .links { display: flex; gap: 16px; margin-top: 18px; font-size: 12.5px; flex-wrap: wrap; }
+  .links a { color: var(--teal); text-decoration: none; font-weight: 600; }
 </style>
 </head>
-<body class="mode-patient">
-
-<header class="topbar">
-  <a class="brand" href="index.html"><strong>HDGF Agent</strong><span id="tPrototype">Prototype</span></a>
-  <a class="back-link" href="index.html" id="tBack">← About the framework</a>
-  <div class="mode-switch" role="tablist" aria-label="Mode">
-    <button type="button" class="active" data-mode="patient" role="tab" aria-selected="true" id="tPatient">Patient</button>
-    <button type="button" data-mode="physician" role="tab" aria-selected="false" id="tPhysician">Physician</button>
-  </div>
-  <a class="top-link" href="settings.html#agent" id="engineLink"><span class="engine-dot" id="engineDot"></span><span id="engineLabel">Demo mode</span></a>
-  <a class="top-link" href="settings.html" id="settingsLink" aria-label="Settings">
-    <svg class="gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <span id="tSettings">Settings</span>
-  </a>
-</header>
-<div class="notice" id="tNotice"></div>
-
-<div class="main">
-  <aside class="side" id="side"></aside>
-  <section class="chat">
-    <div class="log" id="log" aria-live="polite"></div>
-    <div class="composer">
-      <div class="chips" id="chips"></div>
-      <form class="input-row" id="form">
-        <textarea id="input" rows="1" aria-label="Message"></textarea>
-        <button class="send" id="send" type="submit"></button>
-      </form>
+<body class="role-patient">
+<div class="wrap">
+  <section class="intro">
+    <a class="brand" href="index.html"><strong>HDGF Agent</strong><span id="tProto"></span></a>
+    <div class="intro-body">
+      <h1 id="tHead"></h1>
+      <p id="tLead"></p>
+      <ul id="tPoints"></ul>
     </div>
+    <p class="intro-foot" id="tFoot"></p>
+  </section>
+
+  <section class="panel">
+    <div class="panel-top">
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en">English</button>
+        <button type="button" data-lang="ko">한국어</button>
+      </div>
+    </div>
+    <form class="card" id="form">
+      <h2 id="tSignIn"></h2>
+      <p class="sub" id="tSub"></p>
+      <div class="roles" role="tablist">
+        <button type="button" role="tab" data-role="patient" id="tRolePatient"></button>
+        <button type="button" role="tab" data-role="physician" id="tRolePhys"></button>
+      </div>
+      <div class="label" id="tChoose"></div>
+      <div class="accounts" id="accounts"></div>
+      <div class="field"><input type="password" value="demo-password" disabled aria-label="Password"></div>
+      <button class="go" type="submit" id="tGo"></button>
+      <p class="fine" id="tFine"></p>
+      <div class="links"><a href="settings.html" id="tSettings"></a><a href="index.html" id="tAbout"></a></div>
+    </form>
   </section>
 </div>
 
 <script type="module">
-import {
-  getLang, pick, getEngine, makeClient, LEVELS, LEVEL_LABEL, SECTIONS, SECTION_KEYS,
-  getSharing, saveSharing, getRequests, saveRequests, PATIENT, GP, RECORD, localizedRecord, DEMO_SUMMARIES,
-} from './js/hdgf-core.js';
+import { getLang, setLang, pick, esc, PATIENTS, SEX, GP, CONDITIONS, RECORDS, getSession, signIn } from './js/hdgf-core.js';
 
-// Returning via the back button restores a cached page; reload so settings changes apply.
-window.addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); });
+// Already signed in → go straight to the agent.
+if (getSession()) location.replace('agent.html');
 
-const lang = getLang();
-const ko = lang === 'ko';
-const L = (o) => pick(o, lang);
-const engine = getEngine();
-let sharing = getSharing();
-let requests = getRequests();
-let mode = 'patient';
-let busy = false;
-const credits = 1240;
-const histories = { patient: [], physician: [] };
-const logs = { patient: [], physician: [] };
-const summaryCache = {};  // `${section}:${lang}` → text (API mode)
-
-const gpName = L(GP.name);
 const $ = (s) => document.querySelector(s);
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const last = (a) => a[a.length - 1];
-const secLabel = (k) => L(SECTIONS[k].label);
-const levelLabel = (l) => L(LEVEL_LABEL[l]);
-const num = (n) => n.toLocaleString(ko ? 'ko-KR' : 'en-US');
-
-/* =========================================================
-   Interface text
-   ========================================================= */
-const UI = {
-  prototype: { en: 'Prototype', ko: '프로토타입' },
-  back: { en: '← About the framework', ko: '← 프레임워크 소개' },
-  patient: { en: 'Patient', ko: '환자' },
-  physician: { en: 'Physician', ko: '의사' },
+let lang = getLang();
+let role = 'patient';
+const L = (o) => pick(o, lang);
+const T = {
+  proto: { en: 'Prototype', ko: '프로토타입' },
+  head: { en: 'Your health data, with an agent on your side.', ko: '내 건강 데이터, 내 편인 에이전트와 함께.' },
+  lead: { en: 'Patients own their record and decide what their clinician can see. Clinicians work with what patients share — and with what the data cannot show.', ko: '환자는 자신의 기록을 소유하고, 의료인이 볼 수 있는 범위를 정합니다. 의료인은 환자가 공유한 내용과, 데이터가 보여 주지 못하는 것까지 함께 다룹니다.' },
+  points: {
+    en: ['Share, share an AI summary only, or keep private — per section', 'Patients: understand results, prepare for visits, manage sharing', 'Clinicians: patient list, pre-visit briefs, the questions data cannot answer', 'Nearby specialists and clinical trials for each patient'],
+    ko: ['항목별로 공개, AI 정리본만 공개, 비공개 선택', '환자: 결과 이해, 진료 준비, 공개 범위 관리', '의료인: 환자 목록, 진료 전 요약, 데이터로 답할 수 없는 질문', '환자별 주변 전문의와 임상시험 정보'],
+  },
+  foot: { en: 'Based on the Health Data Gravity Framework. <a href="index.html">About the framework</a>', ko: 'Health Data Gravity Framework를 바탕으로 합니다. <a href="index.html">프레임워크 소개</a>' },
+  signIn: { en: 'Sign in', ko: '로그인' },
+  sub: { en: 'Choose a demo account. All accounts and records are fictional.', ko: '데모 계정을 선택하세요. 모든 계정과 기록은 가상입니다.' },
+  rolePatient: { en: 'Patient', ko: '환자' },
+  rolePhys: { en: 'Healthcare professional', ko: '의료인' },
+  choosePatient: { en: 'Demo patient accounts', ko: '데모 환자 계정' },
+  choosePhys: { en: 'Demo clinician account', ko: '데모 의료인 계정' },
+  go: { en: 'Sign in', ko: '로그인' },
+  fine: { en: 'Demo sign-in only: there is no real authentication and no password check. Do not enter real patient information.', ko: '데모용 로그인입니다. 실제 인증이나 비밀번호 확인은 없습니다. 실제 환자 정보를 입력하지 마세요.' },
   settings: { en: 'Settings', ko: '설정' },
-  demo: { en: 'Demo mode', ko: '데모 모드' },
-  notice: { en: 'Prototype with a fictional patient. Not medical advice. Do not enter real patient information.', ko: '가상 환자를 사용한 프로토타입입니다. 의료 조언이 아닙니다. 실제 환자 정보를 입력하지 마세요.' },
-  send: { en: 'Send', ko: '보내기' },
-  phPatient: { en: 'Ask about your health data…', ko: '내 건강 데이터에 대해 물어보세요…' },
-  phPhysician: { en: `Ask about ${PATIENT.short}'s shared record…`, ko: `${PATIENT.name} 님이 공유한 기록에 대해 물어보세요…` },
-  myRecord: { en: 'My health record', ko: '내 건강 기록' },
-  sharedBy: { en: 'Shared by patient', ko: '환자가 공유한 기록' },
-  gpLine: { en: `GP: ${GP.name.en}`, ko: `주치의: ${GP.name.ko}` },
-  viewing: { en: `Viewing as ${GP.name.en}`, ko: `${GP.name.ko}으로 보는 중` },
-  sharingWith: { en: `Sharing with ${GP.name.en}`, ko: `${GP.name.ko}에게 공개` },
-  more: { en: 'More settings →', ko: '설정 더보기 →' },
-  gpSees: { en: 'What your GP sees', ko: '주치의에게 보이는 내용' },
-  preview: { en: 'Generate preview', ko: '미리보기 생성' },
-  loadSummary: { en: 'Generate AI summary', ko: 'AI 정리본 생성' },
-  generating: { en: 'Generating…', ko: '생성 중…' },
-  summaryOnlyNote: { en: 'The patient shares only an AI-written summary of this section. The original entries are not visible to you or to the agent.', ko: '환자가 이 항목은 AI 정리본만 공개했습니다. 원본 기록은 선생님과 에이전트 모두 볼 수 없습니다.' },
-  lockedNote: { en: 'The patient has not shared this section. Its contents are not visible to you or to the agent.', ko: '환자가 이 항목을 공개하지 않았습니다. 선생님과 에이전트 모두 내용을 볼 수 없습니다.' },
-  requested: { en: 'Requested', ko: '요청함' },
-  reqText: { en: (s, r) => `<strong>${esc(GP.name.en)}</strong> requests full access to <strong>${esc(s)}</strong>: ${esc(r)}`, ko: (s, r) => `<strong>${esc(GP.name.ko)}</strong>이 <strong>${esc(s)}</strong> 원본 열람을 요청했습니다: ${esc(r)}` },
-  decline: { en: 'Decline', ko: '거절' },
-  credits: { en: 'Credits', ko: '크레딧' },
-  illustrative: { en: 'Illustrative', ko: '예시' },
-  was: { en: 'was', ko: '이전' },
-  homeAvg: { en: 'Home average', ko: '가정 평균' },
-  readings: { en: 'Readings', ko: '측정 횟수' },
-  clinic: { en: 'Clinic', ko: '진료실' },
-  steps: { en: 'Steps / day', ko: '하루 걸음 수' },
-  sleep: { en: 'Sleep / night', ko: '하루 수면' },
-  rhr: { en: 'Resting HR', ko: '안정 시 심박수' },
-  notShared: { en: 'not shared', ko: '비공개' },
-  aiSummary: { en: 'AI summary only', ko: 'AI 정리본만' },
-  err: { en: 'error', ko: '오류' },
-  refusal: { en: 'The model declined this request. Try rephrasing.', ko: '모델이 이 요청에 응답하지 않았습니다. 다른 표현으로 다시 시도해 주세요.' },
-  cutoff: { en: 'Response was cut off (length limit).', ko: '응답이 길이 제한으로 중간에 끊겼습니다.' },
-  e401: { en: 'Invalid API key. Check it in Settings.', ko: 'API 키가 올바르지 않습니다. 설정에서 확인해 주세요.' },
-  e429: { en: 'Rate limit reached. Please wait and try again.', ko: '요청 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.' },
-  e400: { en: 'Request rejected:', ko: '요청이 거부되었습니다:' },
-  e500: { en: 'The API is temporarily unavailable. Try again shortly.', ko: 'API를 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.' },
-  eNet: { en: 'Could not reach the API:', ko: 'API에 연결할 수 없습니다:' },
-  updated: { en: 'Updated.', ko: '변경했습니다.' },
-  noChange: { en: 'No change made.', ko: '변경하지 않았습니다.' },
-  confirm: { en: 'Confirm', ko: '확인' },
-  notNow: { en: 'Not now', ko: '나중에' },
-  proposal: { en: (s, l) => `Change sharing of <strong>${esc(s)}</strong> to <strong>${esc(l)}</strong>?`, ko: (s, l) => `<strong>${esc(s)}</strong> 공개 수준을 <strong>${esc(l)}</strong>(으)로 바꿀까요?` },
+  about: { en: 'About the framework', ko: '프레임워크 소개' },
+  patients: { en: (n) => `${n} patients`, ko: (n) => `환자 ${n}명` },
 };
-const u = (k) => L(UI[k]);
+const t = (k) => L(T[k]);
 
-function applyStaticText() {
+function render() {
+  const prev = document.querySelector('input[name=acct]:checked');
   document.documentElement.lang = lang;
-  $('#tPrototype').textContent = u('prototype');
-  $('#tBack').textContent = u('back');
-  $('#tPatient').textContent = u('patient');
-  $('#tPhysician').textContent = u('physician');
-  $('#tSettings').textContent = u('settings');
-  $('#tNotice').textContent = u('notice');
-  $('#send').textContent = u('send');
-  const live = engine.kind === 'api';
-  $('#engineDot').classList.toggle('live', live);
-  $('#engineLabel').textContent = live ? `Claude API · ${engine.model.replace('claude-', '')}` : u('demo');
+  document.title = lang === 'ko' ? 'HDGF 에이전트 로그인' : 'HDGF Agent Sign-in';
+  document.body.className = `role-${role}`;
+  document.querySelectorAll('.lang button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.lang === lang));
+  document.querySelectorAll('.roles button').forEach((b) => b.setAttribute('aria-selected', b.dataset.role === role));
+  $('#tProto').textContent = t('proto');
+  $('#tHead').textContent = t('head');
+  $('#tLead').textContent = t('lead');
+  $('#tPoints').innerHTML = T.points[lang].map((p) => `<li>${esc(p)}</li>`).join('');
+  $('#tFoot').innerHTML = t('foot');
+  $('#tSignIn').textContent = t('signIn');
+  $('#tSub').textContent = t('sub');
+  $('#tRolePatient').textContent = t('rolePatient');
+  $('#tRolePhys').textContent = t('rolePhys');
+  $('#tChoose').textContent = role === 'patient' ? t('choosePatient') : t('choosePhys');
+  $('#tGo').textContent = t('go');
+  $('#tFine').textContent = t('fine');
+  $('#tSettings').textContent = t('settings');
+  $('#tAbout').textContent = t('about');
+  $('#accounts').innerHTML = role === 'patient'
+    ? PATIENTS.map((p, i) => `<label class="acct"><input type="radio" name="acct" value="${p.id}" ${i === 0 ? 'checked' : ''}><span class="av">${p.initials}</span>
+        <span><strong>${esc(p.name)}</strong><small>${p.age} · ${esc(L(SEX[p.sex]))} · ${esc(RECORDS[p.id].conditions.slice(0, 2).map((c) => L(CONDITIONS[c.code])).join(', '))}</small></span></label>`).join('')
+    : `<label class="acct"><input type="radio" name="acct" value="${GP.id}" checked><span class="av">HP</span>
+        <span><strong>${esc(L(GP.name))}</strong><small>${esc(L(GP.role))} · ${esc(L(GP.clinic))} · ${esc(L(T.patients)(PATIENTS.length))}</small></span></label>`;
+  if (prev && role === 'patient') { const same = document.querySelector(`input[name=acct][value="${prev.value}"]`); if (same) same.checked = true; }
 }
 
-/* =========================================================
-   Minimal markdown + sparkline
-   ========================================================= */
-function md(src) {
-  const lines = esc(src).split('\n');
-  let html = '', list = null;
-  const inline = (t) => t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*(?!\s)(.+?)\*/g, '$1<em>$2</em>').replace(/`(.+?)`/g, '<code>$1</code>');
-  const close = () => { if (list) { html += `</${list}>`; list = null; } };
-  for (const raw of lines) {
-    const l = raw.trimEnd();
-    let m;
-    if ((m = l.match(/^#{1,6}\s+(.*)/))) { close(); html += `<h4>${inline(m[1])}</h4>`; }
-    else if ((m = l.match(/^\s*[-•]\s+(.*)/))) { if (list !== 'ul') { close(); html += '<ul>'; list = 'ul'; } html += `<li>${inline(m[1])}</li>`; }
-    else if ((m = l.match(/^\s*\d+[.)]\s+(.*)/))) { if (list !== 'ol') { close(); html += '<ol>'; list = 'ol'; } html += `<li>${inline(m[1])}</li>`; }
-    else if (l.startsWith('&gt; ')) { close(); html += `<p class="note">${inline(l.slice(5))}</p>`; }
-    else if (!l.trim()) { close(); }
-    else { close(); html += `<p>${inline(l)}</p>`; }
-  }
-  close();
-  return html;
-}
-function sparkline(points, { w = 120, h = 28, target } = {}) {
-  const vals = points.map((p) => p.value);
-  const lo = Math.min(...vals, target ?? Infinity) - 0.2, hi = Math.max(...vals, target ?? -Infinity) + 0.2;
-  const x = (i) => 4 + (i * (w - 8)) / (points.length - 1 || 1);
-  const y = (v) => h - 4 - ((v - lo) / (hi - lo || 1)) * (h - 8);
-  const path = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(' ');
-  const t = target != null ? `<line x1="0" x2="${w}" y1="${y(target)}" y2="${y(target)}" stroke="#B8923A" stroke-dasharray="3 3" stroke-width="1"/>` : '';
-  const dots = points.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.value)}" r="2.2" fill="#2E7D72"/>`).join('');
-  return `<svg class="spark" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${t}<path d="${path}" fill="none" stroke="#2E7D72" stroke-width="1.5"/>${dots}</svg>`;
-}
-
-/* =========================================================
-   Record access — one gate for BOTH engines.
-   Physician: full → data; summary → AI summary only; private → denied.
-   ========================================================= */
-async function summaryFor(section) {
-  if (engine.kind !== 'api') return L(DEMO_SUMMARIES[section]);
-  const key = `${section}:${lang}`;
-  if (summaryCache[key]) return summaryCache[key];
-  const client = await makeClient(engine.key);
-  const params = {
-    model: engine.model, max_tokens: 4000,
-    system: `You write the version of one section of a patient's health record that her GP is allowed to see. The patient chose to share this section only as a summary.
-Write 2-3 plain sentences in ${ko ? 'Korean' : 'English'}. Keep the clinically relevant meaning. Do not quote entries, and leave out exact dates, exact numbers, names of other people and identifying details. Do not add interpretation or advice beyond the data. Output only the summary.`,
-    messages: [{ role: 'user', content: `Section: ${SECTIONS[section].label.en}\n\n${JSON.stringify(localizedRecord(lang)[section])}` }],
-  };
-  if (engine.model === 'claude-opus-5') { params.betas = ['server-side-fallback-2026-07-01']; params.fallbacks = 'default'; }
-  const msg = await client.beta.messages.create(params);
-  if (msg.stop_reason === 'refusal') throw new Error('refusal');
-  const text = msg.content.filter((b) => b.type === 'text').map((b) => b.text).join('').trim();
-  summaryCache[key] = text;
-  return text;
-}
-
-async function access(section, who = mode) {
-  if (!SECTIONS[section]) return { ok: false, error: `Unknown section "${section}".` };
-  const level = sharing[section];
-  if (who === 'patient') return { ok: true, level: 'full', sharing_level: level, data: RECORD[section] };
-  if (level === 'full') return { ok: true, level, data: RECORD[section] };
-  if (level === 'summary') return { ok: true, level, summary: await summaryFor(section) };
-  return { ok: false, denied: true, level, error: `Not shared by the patient. ${GP.name.en} cannot view "${SECTIONS[section].label.en}" unless ${PATIENT.short} grants access.` };
-}
-function sharingSummary() { return SECTION_KEYS.map((k) => ({ section: k, label: SECTIONS[k].label.en, level_with_gp: sharing[k] })); }
-function persistSharing() { saveSharing(sharing); }
-function persistRequests() { saveRequests(requests); }
-
-/* =========================================================
-   Side panel
-   ========================================================= */
-function sectionBody(key) {
-  const d = RECORD[key];
-  switch (key) {
-    case 'conditions': return `<ul>${d.map((c) => `<li>${esc(L(c.name))}<span class="m">${ko ? `${c.since}년부터` : `since ${c.since}`}</span></li>`).join('')}</ul>`;
-    case 'medications': return `<ul>${d.map((m) => `<li>${esc(m.name)}<span class="m">${esc(L(m.dose))}</span></li>`).join('')}</ul>`;
-    case 'labs': {
-      const a = last(d.hba1c);
-      return `<ul><li>HbA1c <span class="m">${a.value}% · ${a.date}</span></li></ul>${sparkline(d.hba1c, { target: 7 })}
-        <ul><li>eGFR <span class="m">${last(d.egfr).value} mL/min/1.73m² (${u('was')} ${d.egfr[0].value})</span></li>
-        <li>LDL <span class="m">${last(d.ldl).value} mg/dL</span></li>
-        <li>${ko ? '요 알부민/크레아티닌 비' : 'Urine albumin/creatinine'} <span class="m">${last(d.uacr).value} mg/g</span></li></ul>`;
-    }
-    case 'vitals': return `<ul><li>${u('homeAvg')} (${esc(L(d.period))}) <span class="m">${d.homeAvg} mmHg</span></li><li>${u('readings')} <span class="m">${d.readings}</span></li><li>${u('clinic')} ${d.clinic.date}<span class="m">${d.clinic.value} mmHg</span></li></ul>`;
-    case 'wearable': return `<ul><li>${u('steps')} <span class="m">${num(d.steps.now)} (${u('was')} ${num(d.steps.before)})</span></li><li>${u('sleep')} <span class="m">${esc(L(d.sleep.now))} (${u('was')} ${esc(L(d.sleep.before))})</span></li><li>${u('rhr')} <span class="m">${d.rhr.now} bpm (${u('was')} ${d.rhr.before})</span></li></ul>`;
-    case 'visits': return `<ul>${d.map((v) => `<li>${esc(L(v.what))}<span class="m">${v.date}</span></li>`).join('')}</ul>`;
-    case 'journal': return `<ul>${d.map((j) => `<li class="block">${esc(L(j.text))} <span class="m">${j.date}</span></li>`).join('')}</ul>`;
-  }
-  return '';
-}
-function summaryBlock(key) {
-  const cached = engine.kind === 'api' ? summaryCache[`${key}:${lang}`] : L(DEMO_SUMMARIES[key]);
-  if (cached) return `<div class="summary-text">${esc(cached)}</div>`;
-  return `<button type="button" class="link-btn" data-gen="${key}">${mode === 'patient' ? u('preview') : u('loadSummary')}</button>`;
-}
-const pill = (level) => `<span class="pill ${level}">${esc(levelLabel(level))}</span>`;
-const seg = (k) => `<div class="seg" role="group" aria-label="${esc(secLabel(k))}">${LEVELS.map((l) => `<button type="button" data-sec="${k}" data-level="${l}" aria-pressed="${sharing[k] === l}">${esc(levelLabel(l))}</button>`).join('')}</div>`;
-
-function renderSide() {
-  const side = $('#side');
-  if (mode === 'patient') {
-    const pending = requests.filter((r) => r.status === 'pending');
-    side.innerHTML = `
-      <div class="side-head">
-        <div class="side-eyebrow">${u('myRecord')}</div>
-        <div class="side-title">${PATIENT.name}</div>
-        <div class="side-sub">${PATIENT.age} · ${L(PATIENT.sex)} · ${u('gpLine')}</div>
-      </div>
-      ${pending.map((r) => `<div class="req"><p>${L(UI.reqText)(secLabel(r.section), r.reason)}</p>
-        <div class="req-actions">
-          <button class="btn primary" data-req="${r.id}" data-act="full">${esc(levelLabel('full'))}</button>
-          <button class="btn gold" data-req="${r.id}" data-act="summary">${esc(levelLabel('summary'))}</button>
-          <button class="btn" data-req="${r.id}" data-act="decline">${u('decline')}</button></div></div>`).join('')}
-      ${SECTION_KEYS.map((k) => `
-        <div class="card ${sharing[k] === 'summary' ? 'summary' : ''}">
-          <div class="card-head"><h4>${esc(secLabel(k))}</h4>${pill(sharing[k])}</div>
-          ${sectionBody(k)}
-          ${sharing[k] === 'summary' ? `<div class="gp-sees"><b>${u('gpSees')}</b>${summaryBlock(k)}</div>` : ''}
-        </div>`).join('')}
-      <div class="section-gap">
-        <div class="section-label"><span>${u('sharingWith')}</span><a href="settings.html#data">${u('more')}</a></div>
-        <div class="card">${SECTION_KEYS.map((k) => `<div class="share-row"><span>${esc(secLabel(k))}</span>${seg(k)}</div>`).join('')}</div>
-      </div>
-      <div class="section-gap">
-        <div class="section-label"><span>${u('credits')}</span></div>
-        <div class="card"><div class="card-head"><h4>${num(credits)} ${ko ? '크레딧' : 'credits'}</h4><span class="pill full">${u('illustrative')}</span></div>
-          <ul><li>${ko ? '주치의와 관리 계획 완료' : 'Completed care plan with GP'}<span class="m">+200</span></li><li>${ko ? '가정 혈압 꾸준히 기록' : 'Consistent home BP logging'}<span class="m">+80</span></li><li>${ko ? '원격 진료 사용' : 'Teleconsultation redeemed'}<span class="m">−150</span></li></ul></div>
-      </div>`;
-  } else {
-    side.innerHTML = `
-      <div class="side-head">
-        <div class="side-eyebrow">${u('sharedBy')}</div>
-        <div class="side-title">${PATIENT.name}</div>
-        <div class="side-sub">${PATIENT.age} · ${L(PATIENT.sex)} · ${u('viewing')}</div>
-      </div>
-      ${SECTION_KEYS.map((k) => {
-        const lv = sharing[k];
-        if (lv === 'full') return `<div class="card"><div class="card-head"><h4>${esc(secLabel(k))}</h4>${pill('full')}</div>${sectionBody(k)}</div>`;
-        const p = requests.find((r) => r.section === k && r.status === 'pending');
-        const tag = p ? `<span class="pill pending">${u('requested')}</span>` : pill(lv);
-        if (lv === 'summary') return `<div class="card summary"><div class="card-head"><h4>${esc(secLabel(k))}</h4>${tag}</div>${summaryBlock(k)}<p style="font-size:11px;color:var(--muted);margin-top:6px">${u('summaryOnlyNote')}</p></div>`;
-        return `<div class="card locked"><div class="card-head"><h4>${esc(secLabel(k))}</h4>${tag}</div><p>${u('lockedNote')}</p></div>`;
-      }).join('')}`;
-  }
-}
-
-$('#side').addEventListener('click', async (e) => {
-  const segBtn = e.target.closest('button[data-sec]');
-  if (segBtn) { sharing[segBtn.dataset.sec] = segBtn.dataset.level; persistSharing(); renderSide(); return; }
-  const gen = e.target.closest('button[data-gen]');
-  if (gen) {
-    gen.disabled = true; gen.textContent = u('generating');
-    try { await summaryFor(gen.dataset.gen); renderSide(); }
-    catch (err) { gen.disabled = false; gen.textContent = apiErrorText(err); }
-    return;
-  }
-  const id = e.target.dataset.req;
-  if (!id) return;
-  const r = requests.find((x) => x.id === id);
-  if (!r) return;
-  const act = e.target.dataset.act;
-  r.status = act === 'decline' ? 'declined' : 'approved';
-  if (act !== 'decline') { sharing[r.section] = act; persistSharing(); }
-  persistRequests();
-  renderSide();
+document.querySelectorAll('.lang button').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); lang = getLang(); render(); }));
+document.querySelectorAll('.roles button').forEach((b) => b.addEventListener('click', () => { role = b.dataset.role; render(); }));
+$('#form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const v = document.querySelector('input[name=acct]:checked').value;
+  signIn(role === 'patient' ? { role: 'patient', patientId: v } : { role: 'physician', clinicianId: v });
+  location.href = 'agent.html';
 });
-
-/* =========================================================
-   Chat rendering
-   ========================================================= */
-function addUser(text) {
-  const el = document.createElement('div');
-  el.className = 'msg user';
-  el.innerHTML = `<div class="avatar">${mode === 'patient' ? 'MK' : 'HP'}</div><div class="bubble"></div>`;
-  el.querySelector('.bubble').textContent = text;
-  pushNode(el);
-}
-function addAgent() {
-  const el = document.createElement('div');
-  el.className = 'msg agent';
-  el.innerHTML = `<div class="avatar">AI</div><div class="bubble"><div class="trace"></div><div class="body cursor"></div></div>`;
-  pushNode(el);
-  const trace = el.querySelector('.trace'), body = el.querySelector('.body');
-  let text = '';
-  return {
-    step(label, cls = '') { const s = document.createElement('div'); s.className = `step ${cls}`; s.textContent = label; trace.appendChild(s); scroll(); return s; },
-    append(t) { text += t; body.innerHTML = md(text); scroll(); },
-    set(t) { text = t; body.innerHTML = md(text); scroll(); },
-    node(n) { el.querySelector('.bubble').appendChild(n); scroll(); },
-    error(t) { const p = document.createElement('p'); p.className = 'err'; p.textContent = t; el.querySelector('.bubble').appendChild(p); scroll(); },
-    done() { body.classList.remove('cursor'); },
-  };
-}
-function pushNode(el) { logs[mode].push(el); $('#log').appendChild(el); scroll(); }
-function scroll() { const l = $('#log'); l.scrollTop = l.scrollHeight; }
-function renderLog() {
-  const l = $('#log');
-  l.innerHTML = '';
-  if (!logs[mode].length) greet();
-  else logs[mode].forEach((n) => l.appendChild(n));
-  scroll();
-}
-function greet() {
-  const a = addAgent();
-  const api = engine.kind === 'api';
-  if (mode === 'patient') a.set(ko
-    ? `안녕하세요, ${PATIENT.name} 님. 저는 개인 건강 에이전트입니다. 전체 기록을 읽고 그 의미를 설명하며, 진료 준비를 돕고, 누가 데이터를 볼 수 있는지 관리합니다. 각 항목은 **공개**, **AI 정리본만 공개**, **비공개** 중에서 고를 수 있습니다. **공개 여부는 ${PATIENT.name} 님이 결정합니다.**\n\n${api ? '자유롭게 질문하시거나 아래 추천 질문을 눌러 보세요.' : '아래 추천 질문을 눌러 보세요.'}`
-    : `Hello ${PATIENT.short}. I'm your personal health agent. I can read your full record, explain what it means, help you prepare for visits, and manage who can see your data. Each part of your record can be **shared**, shared as an **AI summary only**, or kept **private**. **You decide.**\n\n${api ? 'Ask anything, or try a suggestion below.' : 'Try one of the suggestions below.'}`);
-  else a.set(ko
-    ? `안녕하세요, ${gpName}. **${PATIENT.name}** 님이 공유한 기록을 검토하고, 추세를 짚어 드리고, 데이터에 드러나지 않는 부분에 대해 물어볼 질문을 준비해 드립니다. 원본을 공개한 항목은 원본을, AI 정리본만 공개한 항목은 정리본만 볼 수 있습니다. 비공개 항목은 볼 수 없습니다.\n\n${api ? '자유롭게 질문하시거나 아래 추천 질문을 눌러 보세요.' : '아래 추천 질문을 눌러 보세요.'}`
-    : `Good morning, ${gpName}. I can review what **${PATIENT.name}** has shared with you, flag trends, and help you prepare questions for what her data does not show. I see original data where she shares it, only an AI summary where she chose that, and nothing she keeps private.\n\n${api ? 'Ask anything, or try a suggestion below.' : 'Try one of the suggestions below.'}`);
-  a.done();
-}
-
-const CHIPS = {
-  patient: [
-    { id: 'labs', en: 'Explain my latest lab results', ko: '최근 검사 결과 설명해 줘' },
-    { id: 'changes', en: 'What changed in the last 3 months?', ko: '최근 3개월 동안 무엇이 달라졌어?' },
-    { id: 'questions', en: 'Prepare questions for my next GP visit', ko: '다음 진료 때 물어볼 질문 준비해 줘' },
-    { id: 'sharing', en: 'Who can see my data?', ko: '누가 내 데이터를 볼 수 있어?' },
-    { id: 'meds', en: 'Review my medications', ko: '복용 중인 약 확인해 줘' },
-  ],
-  physician: [
-    { id: 'summary', en: 'Summarise the shared record before the visit', ko: '진료 전 공유 기록 요약' },
-    { id: 'flags', en: 'Flag trends that need attention', ko: '주의가 필요한 추세 알려 줘' },
-    { id: 'gaps', en: 'What does the data not tell me?', ko: '데이터가 말해 주지 않는 것은?' },
-    { id: 'openers', en: 'Suggest conversation openers', ko: '대화를 시작할 질문 제안' },
-    { id: 'request', en: 'Request full wearable data from the patient', ko: '환자에게 웨어러블 원본 데이터 요청' },
-  ],
-};
-function renderChips() {
-  $('#chips').innerHTML = CHIPS[mode].map((c) => `<button type="button" class="chip" data-intent="${c.id}">${esc(L(c))}</button>`).join('');
-}
-$('#chips').addEventListener('click', (e) => { const c = e.target.closest('.chip'); if (c) submit(c.textContent, c.dataset.intent); });
-
-/* =========================================================
-   Demo engine — scripted, but every read goes through access()
-   ========================================================= */
-const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-async function stream(agent, text) {
-  const parts = text.split(/(\s+)/);
-  for (let i = 0; i < parts.length; i += 6) { agent.append(parts.slice(i, i + 6).join('')); await wait(18); }
-}
-function markStep(s, r) {
-  s.classList.remove('run');
-  if (r && r.ok === false) { s.classList.add('denied'); s.textContent += ` → ${r.denied ? u('notShared') : u('err')}`; }
-  else if (r && r.level === 'summary') { s.classList.add('summary'); s.textContent += ` → ${u('aiSummary')}`; }
-}
-async function read(agent, section) {
-  const s = agent.step(`read_record("${section}")`, 'run');
-  await wait(300);
-  const r = await access(section);
-  markStep(s, r);
-  return r;
-}
-async function listSharing(agent) { const s = agent.step('list_sharing()', 'run'); await wait(250); s.classList.remove('run'); return sharingSummary(); }
-
-const INTENT_RE = {
-  patient: [
-    ['labs', /lab|hba1c|a1c|result|kidney|egfr|cholesterol|검사|혈당|결과/i],
-    ['changes', /change|last 3|recent|trend|달라|변화|최근/i],
-    ['questions', /question|visit|prepare|appointment|질문|진료|준비/i],
-    ['sharing', /who can|see my|shar|consent|privacy|공유|공개|동의|누가/i],
-    ['meds', /medic|drug|pill|prescri|약/i],
-  ],
-  physician: [
-    ['summary', /summar|brief|overview|요약/i],
-    ['flags', /flag|trend|attention|concern|추세|주의/i],
-    ['gaps', /not tell|missing|gap|beyond|말해 주지|모르|드러나/i],
-    ['opener', /opener|conversation|ask|talk|대화|질문/i],
-    ['request', /request|wearable|access|요청|웨어러블/i],
-  ],
-};
-
-async function runDemo(text, intent, agent) {
-  const id = intent || (INTENT_RE[mode].find(([, re]) => re.test(text)) || [])[0];
-  const fn = { labs: pLabs, changes: pChanges, questions: pQuestions, sharing: pSharing, meds: pMeds, summary: dSummary, flags: dFlags, gaps: dGaps, openers: dOpeners, opener: dOpeners, request: dRequest }[id];
-  if (!fn) {
-    await stream(agent, ko
-      ? `데모 모드에서는 아래 추천 질문에만 답합니다. 자유 대화를 하려면 **설정 → AI 에이전트**에서 Claude API와 본인 API 키를 설정해 주세요.`
-      : `In demo mode I respond to the suggested tasks below. For open conversation, set up the **Claude API** with your own key in **Settings → AI agent**.`);
-    return;
-  }
-  await fn(agent);
-}
-
-async function pLabs(a) {
-  const { hba1c, egfr, ldl, uacr } = (await read(a, 'labs')).data;
-  const h = last(hba1c), h0 = hba1c[hba1c.length - 2];
-  await stream(a, ko ? `#### 당화혈색소(HbA1c) — 약 3개월 평균 혈당
-최근 당화혈색소는 **${h.value}%**(${h.date})로, ${h0.date}의 ${h0.value}%보다 조금 올랐습니다. 1년 전 ${hba1c[0].value}%보다는 낮아 전체적으로는 개선된 상태입니다. 당뇨가 있는 성인은 흔히 7% 미만을 목표로 하지만 적절한 목표는 사람마다 다르므로 ${gpName}과 확인해 보세요.
-
-#### 신장 기능
-- **사구체여과율(eGFR) ${last(egfr).value}** mL/min/1.73m²(이전 ${egfr[0].value}). 경도 감소 범위이며, 한 번의 변화는 흔히 재검사로 추적합니다.
-- **요 알부민/크레아티닌 비 ${last(uacr).value} mg/g** — 일반적인 주의 기준인 30 미만입니다.
-
-#### 콜레스테롤
-- **LDL ${last(ldl).value} mg/dL**, 이전 ${ldl[0].value}에서 낮아졌습니다. 복용 중인 스타틴이 효과를 보이는 것으로 보입니다.
-
-> 저는 결과를 설명할 뿐 진단하거나 치료를 바꾸지 않습니다. 궁금한 점은 ${gpName}과 상의해 주세요.`
-  : `#### HbA1c — average blood sugar over ~3 months
-Your latest HbA1c is **${h.value}%** (${h.date}), up slightly from ${h0.value}% in ${h0.date}. It came down from ${hba1c[0].value}% a year ago, so the overall direction since then is still better. Many adults with diabetes aim for below 7%, but the right target is individual — worth confirming yours with ${gpName}.
-
-#### Kidney function
-- **eGFR ${last(egfr).value}** mL/min/1.73m² (was ${egfr[0].value}). This is in the mildly reduced range; a single change like this is usually followed up with repeat testing.
-- **Urine albumin/creatinine ${last(uacr).value} mg/g** — below 30, the usual threshold for concern.
-
-#### Cholesterol
-- **LDL ${last(ldl).value} mg/dL**, down from ${ldl[0].value}. Your statin appears to be helping.
-
-> I explain results; I do not diagnose or change treatment. Please discuss any concerns with ${gpName}.`);
-}
-
-async function pChanges(a) {
-  const labs = (await read(a, 'labs')).data;
-  const w = (await read(a, 'wearable')).data;
-  const v = (await read(a, 'vitals')).data;
-  await stream(a, ko ? `최근 30일을 3개월 전과 비교하면:
-
-- **활동량:** 하루 약 ${num(w.steps.now)}걸음으로, ${num(w.steps.before)}걸음에서 줄었습니다.
-- **수면:** 하루 ${L(w.sleep.now)}로 ${L(w.sleep.before)}에서 줄었고, 안정 시 심박수는 ${w.rhr.before}에서 ${w.rhr.now} bpm으로 올랐습니다.
-- **혈압:** 가정 평균 ${v.homeAvg} mmHg입니다. 당뇨가 있는 경우 흔히 130/80 미만을 목표로 합니다.
-- **당화혈색소:** ${labs.hba1c[2].value}% → ${last(labs.hba1c).value}%.
-
-이 변화들이 함께 나타났습니다. 이유는 데이터만으로 알 수 없지만, ${PATIENT.name} 님은 알고 계실 수도 있습니다. 최근 생활에 달라진 점이 있으신가요? 원하시면 다음 진료 전에 웨어러블 데이터나 관련 내용을 ${gpName}에게 어느 수준으로 공개할지 함께 정해 드릴게요.`
-  : `Comparing the last 30 days with three months ago:
-
-- **Activity:** about ${num(w.steps.now)} steps a day, down from ${num(w.steps.before)}.
-- **Sleep:** ${L(w.sleep.now)} a night, down from ${L(w.sleep.before)}. Resting heart rate rose from ${w.rhr.before} to ${w.rhr.now} bpm.
-- **Blood pressure:** home average ${v.homeAvg} mmHg. A common goal for people with diabetes is below 130/80.
-- **HbA1c:** ${labs.hba1c[2].value}% → ${last(labs.hba1c).value}%.
-
-These changes happened together. Data alone cannot say why — but you might. Has something changed in your routine recently? If you like, I can help you decide how much of your wearable data or context to share with ${gpName} before your next visit.`);
-}
-
-async function pQuestions(a) {
-  await read(a, 'labs'); await read(a, 'wearable'); await read(a, 'journal');
-  const j = sharing.journal;
-  const jNote = ko
-    ? { private: `개인 메모에 남편을 돌보는 일과 식사를 거르는 일이 적혀 있습니다. 이 메모는 **비공개**입니다. 앱에서 공개하지 않아도 되지만, 진료 때 직접 말씀하셔도 좋습니다. 진료에 중요할 수 있고, ${gpName}은 알고 있는 것만 도울 수 있습니다. **AI 정리본만 공개**로 바꾸면 세부 내용 없이 요지만 전달할 수도 있습니다.`,
-        summary: `개인 메모는 **AI 정리본만 공개**되어 있어, ${gpName}에게는 세부 내용 없이 요지만 전달됩니다. 필요하면 진료 때 직접 더 말씀하셔도 됩니다.`,
-        full: `개인 메모는 **공개**되어 있어 ${gpName}도 볼 수 있습니다.` }[j]
-    : { private: `Your journal mentions caring for your husband and skipping meals. It is **private**. You don't have to share it in the app, but you may want to mention it in person. It could matter for your care, and ${gpName} can only help with what she knows. Setting it to **AI summary only** would pass on the gist without the details.`,
-        summary: `Your journal is shared as an **AI summary only**, so ${gpName} sees the gist without the details. You can say more in person if you wish.`,
-        full: `Your journal is **shared**, so ${gpName} can read it.` }[j];
-  await stream(a, ko ? `${gpName}에게 가져갈 수 있는 질문 목록입니다:
-
-1. 당화혈색소가 7.2%에서 7.4%로 올랐어요. 저에게 맞는 목표는 얼마인가요?
-2. 가정 혈압 평균이 138/84예요. 바꿔야 할 것이 있을까요?
-3. 신장 수치(eGFR)가 74에서 68로 내려갔어요. 다시 검사해야 하나요?
-4. 계단에서 무릎이 더 아파요. 계속 걸을 수 있으려면 어떻게 해야 할까요?
-5. 요즘 잠도 덜 자고 덜 움직여요. 이것이 수치에 영향을 줄 수 있을까요?
-
-${jNote}`
-  : `Here is a short list you could bring to ${gpName}:
-
-1. My HbA1c went up from 7.2% to 7.4%. What target is right for me?
-2. My home blood pressure averages 138/84. Should anything change?
-3. My kidney number (eGFR) dropped from 74 to 68. Does it need re-checking?
-4. My knee hurts more on stairs. What can I do so I can keep walking?
-5. I've been sleeping less and moving less. Could that be affecting my numbers?
-
-${jNote}`);
-}
-
-async function pSharing(a) {
-  await listSharing(a);
-  const by = (lv) => SECTION_KEYS.filter((k) => sharing[k] === lv).map(secLabel).join(', ') || (ko ? '없음' : 'none');
-  await stream(a, ko ? `**공개 (${gpName}이 원본을 봄):** ${by('full')}
-**AI 정리본만 공개 (요지만 봄):** ${by('summary')}
-**비공개 (본인만):** ${by('private')}
-
-제약회사, 보험사, 병원은 식별 가능한 데이터를 볼 수 없습니다. 동의한 범위에서 비식별 데이터만 게이트 API를 통해 조회할 수 있습니다. 왼쪽 **${u('sharingWith')}** 패널이나 설정에서 언제든 바꿀 수 있고, 변경은 즉시 적용됩니다.`
-  : `**Shared (${gpName} sees the original):** ${by('full')}
-**AI summary only (she sees the gist):** ${by('summary')}
-**Private (only you):** ${by('private')}
-
-Pharma, insurers and hospitals cannot see identified data. They can only query de-identified data through the gated API, and only where you have consented. You can change any setting in the **${u('sharingWith')}** panel or in Settings at any time, and changes apply immediately.`);
-}
-
-async function pMeds(a) {
-  const m = (await read(a, 'medications')).data;
-  await stream(a, ko ? `기록된 약은 ${m.length}가지입니다:
-
-${m.map((x) => `- **${x.name}** ${L(x.dose)} — ${L(x.purpose)}`).join('\n')}
-
-복용을 빠뜨렸거나, 부작용이 있거나, 목록에 없는 약(건강기능식품 포함)을 드시고 있다면 ${gpName}에게 알려 주세요. 저는 처방을 바꾸거나 용량을 조언할 수 없습니다.`
-  : `You have ${m.length} medications on record:
-
-${m.map((x) => `- **${x.name}** ${L(x.dose)} — for ${L(x.purpose)}`).join('\n')}
-
-If you've missed doses, noticed side effects, or are taking anything not listed here (including supplements), tell ${gpName}. I can't change prescriptions or advise on doses.`);
-}
-
-/* ---- physician demo ---- */
-async function readAll(a, keys) { const out = {}; for (const k of keys) out[k] = await read(a, k); return out; }
-const sumLine = (k, r) => `- **${secLabel(k)} (${u('aiSummary')}):** ${r.summary}`;
-
-async function dSummary(a) {
-  const r = await readAll(a, ['conditions', 'medications', 'labs', 'vitals', 'wearable']);
-  const lines = [];
-  const add = (k, full) => { if (r[k].level === 'full') lines.push(full(r[k].data)); else if (r[k].level === 'summary') lines.push(sumLine(k, r[k])); };
-  add('conditions', (d) => `- **${secLabel('conditions')}:** ${d.map((x) => L(x.name)).join('; ')}.`);
-  add('medications', (d) => `- **${secLabel('medications')}:** ${d.map((x) => `${x.name} ${L(x.dose)}`).join('; ')}.`);
-  add('labs', (d) => `- **${secLabel('labs')}:** HbA1c ${d.hba1c.map((x) => x.value).join(' → ')}%; eGFR ${d.egfr[0].value} → ${last(d.egfr).value}; LDL ${last(d.ldl).value} mg/dL; uACR ${last(d.uacr).value} mg/g.`);
-  add('vitals', (d) => ko ? `- **${secLabel('vitals')}:** ${L(d.period)} ${d.readings}회 평균 ${d.homeAvg} mmHg.` : `- **${secLabel('vitals')}:** ${d.homeAvg} mmHg average over ${d.readings} readings (${L(d.period)}).`);
-  add('wearable', (d) => ko ? `- **${secLabel('wearable')}:** 걸음 수 ${num(d.steps.before)} → ${num(d.steps.now)}/일, 수면 ${L(d.sleep.before)} → ${L(d.sleep.now)}.` : `- **${secLabel('wearable')}:** steps ${num(d.steps.before)} → ${num(d.steps.now)}/day; sleep ${L(d.sleep.before)} → ${L(d.sleep.now)}.`);
-  const summ = SECTION_KEYS.filter((k) => sharing[k] === 'summary').map(secLabel);
-  const hidden = SECTION_KEYS.filter((k) => sharing[k] === 'private').map(secLabel);
-  await stream(a, `#### ${ko ? '진료 전 요약' : 'Pre-visit brief'} — ${PATIENT.name}, ${PATIENT.age}
-${lines.join('\n') || (ko ? '- 공유된 임상 항목이 없습니다.' : '- The patient has not shared any clinical sections.')}
-
-${summ.length ? (ko ? `**AI 정리본만 공개:** ${summ.join(', ')}. 원본은 볼 수 없으며 정리본만 반영했습니다.\n` : `**AI summary only:** ${summ.join(', ')}. I used the summaries; original entries are not available.\n`) : ''}${hidden.length ? (ko ? `**비공개:** ${hidden.join(', ')}. 접근할 수 없으며 내용을 추측하지 않았습니다.` : `**Private:** ${hidden.join(', ')}. I have no access to these and have not inferred their contents.`) : ''}`);
-}
-
-async function dFlags(a) {
-  const r = await readAll(a, ['labs', 'vitals', 'wearable']);
-  const out = [];
-  if (r.labs.level === 'full') {
-    const d = r.labs.data;
-    out.push(ko ? `- **당화혈색소 상승 ${d.hba1c[2].value}% → ${last(d.hba1c).value}%** — 1년간 개선되다가 다시 올랐습니다.` : `- **HbA1c rose ${d.hba1c[2].value}% → ${last(d.hba1c).value}%** after a year of improvement.`);
-    out.push(ko ? `- **eGFR ${d.egfr[0].value} → ${last(d.egfr).value}**, uACR은 정상 범위. 추세 확인을 위해 재검사를 고려할 수 있습니다.` : `- **eGFR ${d.egfr[0].value} → ${last(d.egfr).value}** with normal uACR. Consider repeat testing to confirm the trend.`);
-  } else if (r.labs.level === 'summary') out.push(sumLine('labs', r.labs));
-  if (r.vitals.level === 'full') out.push(ko ? `- **가정 혈압 ${r.vitals.data.homeAvg}** — 130/80 미만 목표보다 높습니다.` : `- **Home BP ${r.vitals.data.homeAvg}** is above a <130/80 goal.`);
-  else if (r.vitals.level === 'summary') out.push(sumLine('vitals', r.vitals));
-  if (r.wearable.level === 'full') { const w = r.wearable.data; out.push(ko ? `- **활동량과 수면이 함께 감소** (걸음 수 ${num(w.steps.before)} → ${num(w.steps.now)}, 수면 ${L(w.sleep.before)} → ${L(w.sleep.now)}).` : `- **Activity and sleep fell** together (${num(w.steps.before)} → ${num(w.steps.now)} steps; ${L(w.sleep.before)} → ${L(w.sleep.now)}).`); }
-  else if (r.wearable.level === 'summary') out.push(sumLine('wearable', r.wearable));
-  await stream(a, `${out.join('\n') || (ko ? '- 공유된 데이터에서 짚을 만한 사항이 없습니다.' : '- Nothing to flag in the shared data.')}
-
-${ko ? '이 신호들은 함께 움직이고 있어, 기록에 담기지 않은 공통 원인이 있을 수 있습니다. 치료를 바꾸기 전에 환자의 생활에 무엇이 달라졌는지 먼저 이야기해 보는 것이 좋겠습니다.' : 'These signals shift together, which suggests a common cause that the record does not capture. Before changing treatment, it may be worth exploring what has changed in her life.'}`);
-}
-
-async function dGaps(a) {
-  await listSharing(a);
-  const hidden = SECTION_KEYS.filter((k) => sharing[k] === 'private').map(secLabel);
-  const summ = SECTION_KEYS.filter((k) => sharing[k] === 'summary').map(secLabel);
-  let journalHint = '';
-  if (sharing.journal === 'summary') { const r = await read(a, 'journal'); journalHint = ko ? `\n\n환자 메모의 AI 정리본: *${r.summary}* 대화를 시작하기 좋은 지점입니다.` : `\n\nThe AI summary of her journal says: *${r.summary}* This is a natural place to start.`; }
-  await stream(a, ko ? `#### 공유된 데이터로 알 수 없는 것
-${hidden.length ? `- **비공개 항목:** ${hidden.join(', ')}. 볼 수 없으므로 내용을 추측하지 않겠습니다.\n` : ''}${summ.length ? `- **정리본만 공개된 항목:** ${summ.join(', ')}. 요지만 알고 세부 내용은 모릅니다.\n` : ''}- **사적이고 민감한 맥락:** 가정 상황, 경제 형편, 주거, 식생활, 안전. 기록에 잘 담기지 않습니다.
-- **정서적 맥락:** 스트레스, 상실, 우울감은 수면·식사·활동을 바꿉니다. 센서는 패턴을 보여 줄 뿐 이유는 보여 주지 않습니다.
-- **신체적 대면:** 무릎 진찰, 걸음걸이, 오늘 환자의 모습과 말투.
-
-최근 추세는 *무언가* 달라졌음을 가리킵니다. 다음 단계로 가장 유용한 것은 추가 검사보다 대화일 가능성이 큽니다.${journalHint}
-
-> Resource Orchestrator가 “목표를 위해 어떤 자원을 함께 쓸 수 있을까요?”라고 묻는다면, Holistic Companion은 “데이터가 말해 주지 않는 것은 무엇일까요?”라고 묻습니다.`
-  : `#### What the shared data cannot tell you
-${hidden.length ? `- **Private sections:** ${hidden.join(', ')}. I cannot see these, so I will not guess what they contain.\n` : ''}${summ.length ? `- **Summary-only sections:** ${summ.join(', ')}. I know the gist, not the details.\n` : ''}- **Private and sensitive context:** home situation, finances, housing, food access, safety. Records rarely capture these.
-- **Emotional context:** stress, grief or low mood can change sleep, eating and activity. A sensor can show the pattern, but not the reason.
-- **The embodied encounter:** her knee on examination, gait, how she looks and speaks today.
-
-The recent trends point to *something* changing. The most useful next step is likely a conversation, not another test.${journalHint}
-
-> Where the Resource Orchestrator asks “What resources can we combine for your goals?”, the Holistic Companion asks “What does your data not tell me?”`);
-}
-
-async function dOpeners(a) {
-  await read(a, 'visits');
-  await stream(a, ko ? `디지털로 담기 어려운 세 영역에 맞춘 열린 질문입니다:
-
-**사적이고 민감한 영역**
-- “최근 몇 달 사이 집안에 달라진 일이 있으셨어요?”
-- “요즘 스스로를 챙기기 어렵게 만드는 일이 있으신가요?”
-
-**정서적 영역**
-- “요즘 잠은 어떠세요? 마음은 좀 어떠세요?”
-- “최근에 가장 힘드셨던 일은 무엇인가요?”
-
-**신체적 대면**
-- 오른쪽 무릎을 진찰하고 걷는 모습을 살펴보세요. 활동량 감소에 통증이 일부 영향을 줬을 수 있습니다.
-
-공동 의사결정으로 마무리하세요: “앞으로 몇 달 동안 가장 중요하게 생각하시는 것은 무엇인가요?”`
-  : `Open questions across the three non-digitizable domains:
-
-**Private and sensitive**
-- “Has anything changed at home in the last few months?”
-- “Is there anything at home that makes it harder to look after yourself?”
-
-**Emotional**
-- “How have you been sleeping — and how have you been feeling in yourself?”
-- “What has been hardest lately?”
-
-**Embodied**
-- Examine the right knee and watch her walk. The drop in activity may be partly pain-driven.
-
-End with shared decision-making: “What matters most to you over the next few months?”`);
-}
-
-async function dRequest(a) {
-  const key = 'wearable';
-  if (sharing[key] === 'full') { await stream(a, ko ? `${PATIENT.name} 님은 이미 웨어러블 원본 데이터를 공개하고 있습니다.` : `${PATIENT.short} already shares her full wearable data with you.`); return; }
-  if (requests.some((r) => r.section === key && r.status === 'pending')) { await stream(a, ko ? `웨어러블 데이터 요청이 이미 환자에게 전달되어 대기 중입니다.` : `A request for wearable data is already pending with ${PATIENT.short}.`); return; }
-  const s = a.step('request_access("wearable")', 'run'); await wait(300); s.classList.remove('run');
-  requests.push({ id: String(Date.now()), section: key, reason: ko ? '최근 혈당과 혈압 변화를 이해하기 위해' : 'to understand recent changes in blood sugar and blood pressure', status: 'pending' });
-  persistRequests(); renderSide();
-  const now = sharing[key] === 'summary' ? (ko ? '현재는 AI 정리본만 공개되어 있습니다. ' : 'She currently shares only an AI summary. ') : '';
-  await stream(a, ko ? `${now}${PATIENT.name} 님에게 **웨어러블 데이터** 원본 열람 요청을 사유와 함께 보냈습니다. 환자는 앱에서 **공개**, **AI 정리본만 공개**, **거절** 중 하나를 선택할 수 있습니다. 승인 전에는 아무것도 추가로 공개되지 않습니다.
-
-> 상단에서 **환자** 모드로 바꾸면 환자 쪽에서 요청을 볼 수 있습니다.`
-  : `${now}I've sent ${PATIENT.short} a request for full **Wearable data**, with the reason. She can choose **Share**, **AI summary only**, or **Decline** in her app. Nothing more is shared until she decides.
-
-> Switch to **Patient** mode to see the request from her side.`);
-}
-
-/* =========================================================
-   Claude API engine — tool use, streaming, consent-gated tools
-   ========================================================= */
-const SEC_ENUM = SECTION_KEYS;
-const TOOLS = {
-  patient: [
-    { name: 'read_record', description: "Read one section of the patient's own health record. Also returns that section's current sharing level with the GP.", input_schema: { type: 'object', properties: { section: { type: 'string', enum: SEC_ENUM } }, required: ['section'], additionalProperties: false } },
-    { name: 'list_sharing', description: 'List the sharing level of every record section with the GP: full (GP sees original data), summary (GP sees only an AI-written summary), or private (GP sees nothing).', input_schema: { type: 'object', properties: {}, additionalProperties: false } },
-    { name: 'propose_sharing_change', description: 'Propose a new sharing level for one section. The patient must confirm in the UI; this tool never changes sharing by itself.', input_schema: { type: 'object', properties: { section: { type: 'string', enum: SEC_ENUM }, level: { type: 'string', enum: LEVELS }, reason: { type: 'string' } }, required: ['section', 'level', 'reason'], additionalProperties: false } },
-  ],
-  physician: [
-    { name: 'read_record', description: "Read one section of the patient's record, within her consent. Returns original data if she shares it in full, only an AI-written summary if she shares it as a summary, or an error if it is private.", input_schema: { type: 'object', properties: { section: { type: 'string', enum: SEC_ENUM } }, required: ['section'], additionalProperties: false } },
-    { name: 'list_sharing', description: 'List the sharing level the patient has set for each section: full, summary, or private.', input_schema: { type: 'object', properties: {}, additionalProperties: false } },
-    { name: 'request_access', description: 'Ask the patient for full access to a section that is private or summary-only, with a reason she will read. She may grant full access, summary only, or decline.', input_schema: { type: 'object', properties: { section: { type: 'string', enum: SEC_ENUM }, reason: { type: 'string' } }, required: ['section', 'reason'], additionalProperties: false } },
-  ],
-};
-
-function systemPrompt() {
-  const language = ko ? 'Korean' : 'English';
-  const common = `This is a prototype of the Health Data Gravity Framework (HDGF). The patient and all data are fictional. Today is ${new Date().toISOString().slice(0, 10)}.
-Access the record only through the tools. Reply in ${language} by default; if the user writes in another language, reply in that language. Keep answers concise and well structured, using short paragraphs and bullet lists.
-Each record section has a sharing level with the GP: full (original data), summary (only an AI-written summary), or private.`;
-  if (mode === 'patient') return `${common}
-You are the personal health agent of ${PATIENT.name} (${PATIENT.age}, female). Her GP is ${GP.name.en}. You are talking with ${PATIENT.short}. You can read her whole record.
-Help her understand and use her own health data in plain language. Explain results and trends, help her prepare for visits, and help her decide what to share and at which level. She owns the data. Sharing changes need her explicit confirmation, so propose them with propose_sharing_change.
-Do not diagnose, change medications or give doses. Refer clinical decisions to ${GP.name.en}. If something sounds urgent, tell her to seek care promptly.`;
-  return `${common}
-You are the clinical co-author assistant for ${GP.name.en}, primary care physician, preparing to see ${PATIENT.name} (${PATIENT.age}, female). You are talking with ${GP.name.en}.
-You can only see what the patient shares. For summary-level sections you receive only the AI summary; treat it as all you know and do not try to reconstruct the details. For private sections, say plainly they are not shared and never guess, infer or hint at their contents. You may use request_access to ask the patient for full access, with a clear reason.
-Support the physician as a Holistic Companion. Summarise the shared data and flag trends. Also point out what the data cannot show: private and sensitive context, emotional context, and what only an in-person examination reveals. Suggest respectful, open questions for the visit. Support shared decision-making with the patient, not for her. Clinical decisions remain the physician's.`;
-}
-
-async function runTool(name, input, agent) {
-  if (name === 'read_record') {
-    const r = await access(input.section);
-    if (!r.ok) return r;
-    if (mode === 'patient') return { ok: true, sharing_level_with_gp: r.sharing_level, data: localizedRecord(lang)[input.section] };
-    return r.level === 'full' ? { ok: true, level: 'full', data: localizedRecord(lang)[input.section] } : { ok: true, level: 'summary', note: 'Patient shares only this AI-written summary.', summary: r.summary };
-  }
-  if (name === 'list_sharing') return sharingSummary();
-  if (name === 'request_access' && mode === 'physician') {
-    if (!SECTIONS[input.section]) return { ok: false, error: 'Unknown section.' };
-    if (sharing[input.section] === 'full') return { ok: true, result: 'Already shared in full.' };
-    if (requests.some((r) => r.section === input.section && r.status === 'pending')) return { ok: true, result: 'A request is already pending.' };
-    requests.push({ id: String(Date.now()), section: input.section, reason: input.reason, status: 'pending' });
-    persistRequests(); renderSide();
-    return { ok: true, result: 'Request sent. Nothing more is shared until the patient decides.' };
-  }
-  if (name === 'propose_sharing_change' && mode === 'patient') {
-    if (!SECTIONS[input.section] || !LEVELS.includes(input.level)) return { ok: false, error: 'Unknown section or level.' };
-    const card = document.createElement('div');
-    card.className = 'confirm-card';
-    card.innerHTML = `<div>${L(UI.proposal)(secLabel(input.section), levelLabel(input.level))}</div><div style="font-size:12px;color:var(--muted)">${esc(input.reason || '')}</div>
-      <div class="req-actions"><button class="btn primary" data-a="yes">${u('confirm')}</button><button class="btn" data-a="no">${u('notNow')}</button></div>`;
-    card.addEventListener('click', (e) => {
-      const act = e.target.dataset.a; if (!act) return;
-      if (act === 'yes') { sharing[input.section] = input.level; persistSharing(); renderSide(); }
-      card.querySelector('.req-actions').innerHTML = `<span style="font-size:12px;color:var(--muted)">${act === 'yes' ? u('updated') : u('noChange')}</span>`;
-    });
-    agent.node(card);
-    return { ok: true, result: 'Proposal shown to the patient. Sharing changes only if she confirms.' };
-  }
-  return { ok: false, error: `Tool ${name} is not available in this mode.` };
-}
-
-// After a mid-output server-side fallback, drop model-internal blocks that precede the last fallback marker.
-function echoContent(content) {
-  const fi = content.map((b) => b.type).lastIndexOf('fallback');
-  if (fi < 0) return content;
-  return content.filter((b, i) => i > fi || b.type === 'text');
-}
-
-async function runApi(text, agent) {
-  const client = await makeClient(engine.key);
-  const hist = histories[mode];
-  const snap = hist.length;
-  hist.push({ role: 'user', content: text });
-  for (let turn = 0; turn < 8; turn++) {
-    const params = { model: engine.model, max_tokens: 16000, system: systemPrompt(), tools: TOOLS[mode], messages: hist };
-    if (engine.model === 'claude-opus-5') { params.betas = ['server-side-fallback-2026-07-01']; params.fallbacks = 'default'; }
-    const s = client.beta.messages.stream(params);
-    s.on('text', (t) => agent.append(t));
-    const msg = await s.finalMessage();
-    if (msg.stop_reason === 'refusal') { hist.length = snap; agent.error(u('refusal')); return; }
-    hist.push({ role: 'assistant', content: echoContent(msg.content) });
-    if (msg.stop_reason !== 'tool_use') { if (msg.stop_reason === 'max_tokens') agent.error(u('cutoff')); return; }
-    const results = [];
-    for (const b of msg.content.filter((x) => x.type === 'tool_use')) {
-      const st = agent.step(`${b.name}(${b.input && b.input.section ? `"${b.input.section}"` : ''})`, 'run');
-      const out = await runTool(b.name, b.input || {}, agent);
-      markStep(st, out);
-      results.push({ type: 'tool_result', tool_use_id: b.id, content: JSON.stringify(out), ...(out && out.ok === false ? { is_error: true } : {}) });
-    }
-    hist.push({ role: 'user', content: results });
-    agent.append('\n\n');
-  }
-}
-
-function apiErrorText(e) {
-  const st = e && e.status;
-  if (st === 401) return u('e401');
-  if (st === 429) return u('e429');
-  if (st === 400) return `${u('e400')} ${e.message || ''}`;
-  if (st >= 500) return u('e500');
-  if (e && e.message === 'refusal') return u('refusal');
-  return `${u('eNet')} ${(e && e.message) || e}`;
-}
-
-/* =========================================================
-   Submit
-   ========================================================= */
-async function submit(text, intent) {
-  text = text.trim();
-  if (!text || busy) return;
-  busy = true; $('#send').disabled = true;
-  addUser(text);
-  const agent = addAgent();
-  const snap = histories[mode].length;
-  try {
-    if (engine.kind === 'api') await runApi(text, agent);
-    else await runDemo(text, intent, agent);
-  } catch (e) {
-    histories[mode].length = snap;  // drop the failed turn so history stays valid
-    agent.error(apiErrorText(e));
-  } finally {
-    agent.done();
-    busy = false; $('#send').disabled = false;
-  }
-}
-$('#form').addEventListener('submit', (e) => { e.preventDefault(); const t = $('#input').value; $('#input').value = ''; autosize(); submit(t); });
-$('#input').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('#form').requestSubmit(); } });
-function autosize() { const t = $('#input'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 140) + 'px'; }
-$('#input').addEventListener('input', autosize);
-
-/* =========================================================
-   Mode
-   ========================================================= */
-function setMode(m) {
-  if (busy) return;
-  mode = m;
-  document.body.className = `mode-${m}`;
-  document.querySelectorAll('.mode-switch button').forEach((b) => { const on = b.dataset.mode === m; b.classList.toggle('active', on); b.setAttribute('aria-selected', on); });
-  $('#input').placeholder = m === 'patient' ? u('phPatient') : u('phPhysician');
-  renderSide(); renderChips(); renderLog();
-}
-document.querySelectorAll('.mode-switch button').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
-
-applyStaticText();
-setMode('patient');
+render();
 </script>
 </body>
 </html>

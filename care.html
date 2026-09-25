@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Specialists and Trials</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/hdgf-app.css">
+<style>
+  .page { max-width: 1040px; margin: 0 auto; padding: 28px 20px 60px; }
+  .page h1 { font-size: 28px; font-weight: 600; color: var(--dark); line-height: 1.25; }
+  .page .lead { font-size: 13.5px; color: var(--muted); margin-top: 4px; }
+  .basis { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 18px 0 20px; display: grid; grid-template-columns: 1fr auto; gap: 12px 20px; align-items: center; }
+  @media (max-width: 700px) { .basis { grid-template-columns: 1fr; } }
+  .basis .k { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+  .basis .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 12px; padding: 3px 10px; border-radius: 12px; background: var(--bg-alt); color: var(--ink); }
+  .basis .note { font-size: 12px; color: #8A6A1E; margin-top: 6px; }
+  .basis select, .field select, .field input { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13.5px; background: var(--bg); color: var(--ink); }
+
+  .tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  .tabs button { border: 0; background: none; padding: 10px 14px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tabs button[aria-selected=true] { color: var(--dark); border-bottom-color: var(--accent); }
+  .tabs .count { font-size: 11px; background: var(--bg-alt); color: var(--muted); border-radius: 9px; padding: 1px 7px; margin-left: 6px; }
+
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; font-size: 12.5px; color: var(--muted); }
+  .fchip { border: 1px solid var(--line); background: var(--white); font-size: 12px; font-weight: 600; color: var(--ink); padding: 5px 11px; border-radius: 14px; cursor: pointer; }
+  .fchip[aria-pressed=true] { background: var(--dark); color: var(--white); border-color: var(--dark); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+  .card { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .card h3 { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: var(--dark); }
+  .card .sp { font-size: 12.5px; color: var(--accent); font-weight: 600; }
+  .card .meta { font-size: 12.5px; color: var(--muted); display: grid; gap: 2px; }
+  .card .actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; padding-top: 6px; }
+  .why { font-size: 12px; color: var(--ink); background: var(--bg-alt); border-radius: 6px; padding: 6px 9px; }
+
+  .trial { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin-bottom: 12px; }
+  .trial-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+  .trial h3 { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: var(--dark); flex: 1; min-width: 220px; }
+  .trial .meta { font-size: 12.5px; color: var(--muted); margin: 4px 0 10px; }
+  .crit { list-style: none; display: grid; gap: 4px; margin-bottom: 10px; }
+  .crit li { font-size: 13px; display: flex; gap: 8px; align-items: baseline; }
+  .crit .mk { width: 18px; flex: 0 0 auto; text-align: center; font-weight: 700; }
+  .crit .yes { color: var(--teal); } .crit .no { color: #A0412A; } .crit .unk { color: #8A6A1E; }
+  .crit small { color: var(--muted); }
+  .pill.possible { background: #E3F1EE; color: var(--teal); }
+  .pill.check { background: #F5EEDB; color: #8A6A1E; }
+  .pill.unlikely { background: #F6E8E0; color: var(--patient); }
+  .flags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .section-h { font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; font-weight: 700; color: var(--muted); margin: 22px 0 10px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .section-h span.n { text-transform: none; letter-spacing: 0; font-weight: 500; }
+  details.more { margin-top: 4px; }
+  details.more summary { font-size: 12.5px; color: var(--muted); cursor: pointer; margin-bottom: 8px; }
+
+  .live { background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .live-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items: end; }
+  @media (max-width: 700px) { .live-form { grid-template-columns: 1fr; } }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+  .field input { width: 100%; }
+  .live .fine { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  .results { margin-top: 14px; display: grid; gap: 8px; }
+  .result { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .result a { font-size: 13.5px; font-weight: 600; color: var(--dark); text-decoration: none; }
+  .result a:hover { color: var(--teal); }
+  .result .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .empty { font-size: 13px; color: var(--muted); background: var(--white); border: 1px dashed var(--line); border-radius: 10px; padding: 16px; }
+  .err { color: #A0412A; font-size: 13px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<header class="topbar" id="topbar"></header>
+<div class="notice" id="notice"></div>
+
+<main class="page">
+  <h1 id="title"></h1>
+  <p class="lead" id="lead"></p>
+  <div class="basis" id="basis"></div>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" data-tab="spec" id="tabSpec"></button>
+    <button type="button" role="tab" data-tab="trials" id="tabTrials"></button>
+  </div>
+  <section id="paneSpec"></section>
+  <section id="paneTrials" hidden></section>
+</main>
+
+<script type="module">
+import {
+  getLang, pick, esc, getEngine, getSession, getSharing, SECTION_KEYS, SECTIONS,
+  PATIENTS, patientById, SEX, GP, RECORDS, CONDITIONS, SPECIALTIES, SPECIALISTS, CITY_COORDS, distanceKm,
+  DEMO_TRIALS, evaluateTrial, getTrialFlags, saveTrialFlags,
+} from './js/hdgf-core.js';
+import { topbar, wireTopbar } from './js/hdgf-ui.js';
+
+const session = getSession();
+if (!session) location.replace('app.html');
+window.addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); });
+
+const lang = getLang(), ko = lang === 'ko';
+const L = (o) => pick(o, lang);
+const role = session ? session.role : 'patient';
+const pid = role === 'patient' ? session.patientId : new URLSearchParams(location.search).get('patient');
+if (session && !patientById(pid)) location.replace('agent.html');
+const $ = (s) => document.querySelector(s);
+
+const T = {
+  notice: { en: 'Fictional directory and demo trials for the prototype. Live search uses the public ClinicalTrials.gov registry. Not medical advice.', ko: '프로토타입용 가상 전문의 목록과 데모 임상시험입니다. 실시간 검색은 공개 레지스트리인 ClinicalTrials.gov를 사용합니다. 의료 조언이 아닙니다.' },
+  titleP: { en: 'Specialists and clinical trials for you', ko: '나에게 맞는 전문의와 임상시험' },
+  titleD: { en: (n) => `Specialists and clinical trials for ${n}`, ko: (n) => `${n} 님을 위한 전문의와 임상시험` },
+  leadP: { en: 'Matched to your conditions and test results. You decide whether to follow up; nothing is shared until you do.', ko: '진단명과 검사 결과를 바탕으로 찾았습니다. 후속 조치 여부는 본인이 결정하며, 그 전에는 아무것도 공유되지 않습니다.' },
+  leadD: { en: 'Matched using only what the patient shares with you. Criteria that need unshared data are marked “cannot check”.', ko: '환자가 공유한 데이터만으로 찾았습니다. 공유되지 않은 데이터가 필요한 조건은 “확인 불가”로 표시됩니다.' },
+  basis: { en: 'Matched on', ko: '매칭 기준' },
+  near: { en: 'Near', ko: '위치' },
+  condHidden: { en: 'The patient does not share conditions in full, so condition-based matching is not available. Use the specialty filter or the live search below.', ko: '환자가 진단명을 원본으로 공개하지 않아 진단명 기반 매칭을 할 수 없습니다. 전문 분야 필터나 아래 실시간 검색을 이용하세요.' },
+  spec: { en: 'Specialists nearby', ko: '주변 전문의' },
+  trials: { en: 'Clinical trials', ko: '임상시험' },
+  all: { en: 'All specialties', ko: '전체 분야' },
+  relevant: { en: 'Relevant to', ko: '관련 분야' },
+  km: { en: 'km', ko: 'km' },
+  langs: { en: 'Languages', ko: '진료 언어' },
+  wait: { en: (d) => `Next appointment in about ${d} days`, ko: (d) => `다음 예약 가능: 약 ${d}일 후` },
+  fictional: { en: 'Fictional directory', ko: '가상 목록' },
+  discussP: { en: 'Ask my agent', ko: '에이전트에게 묻기' },
+  discussD: { en: 'Draft referral with agent', ko: '에이전트와 의뢰서 작성' },
+  askSpecP: { en: (s, sp) => `Help me prepare for a possible referral to ${s} (${sp}). What should I ask and what should I share?`, ko: (s, sp) => `${s}(${sp})에게 진료 의뢰를 받을 경우를 준비하도록 도와줘. 무엇을 묻고 무엇을 공유하면 좋을까?` },
+  askSpecD: { en: (s, sp) => `Draft a short referral note to ${s} (${sp}) using only the data this patient shares with me.`, ko: (s, sp) => `이 환자가 공유한 데이터만 사용해서 ${s}(${sp})에게 보낼 짧은 진료 의뢰서 초안을 작성해 줘.` },
+  noSpec: { en: 'No specialists for this filter.', ko: '이 조건에 맞는 전문의가 없습니다.' },
+  demoTrials: { en: 'Matched demo trials', ko: '매칭된 데모 임상시험' },
+  demoNote: { en: 'Fictional listings for demonstration; IDs are not real registry numbers.', ko: '시연용 가상 목록이며, ID는 실제 등록 번호가 아닙니다.' },
+  possible: { en: 'Possible match', ko: '참여 가능성 있음' },
+  check: { en: 'Check eligibility', ko: '적격성 확인 필요' },
+  unlikely: { en: 'Unlikely to qualify', ko: '참여 어려움' },
+  cannot: { en: 'cannot check — not shared', ko: '확인 불가 — 비공개' },
+  phase: { en: 'Phase', ko: '단계' },
+  notApplicable: { en: 'not applicable', ko: '해당 없음' },
+  interested: { en: 'I’m interested', ko: '관심 있음' },
+  interestedOn: { en: 'Interested ✓', ko: '관심 표시함 ✓' },
+  suggest: { en: 'Suggest to patient', ko: '환자에게 권유' },
+  suggestedOn: { en: 'Suggested ✓', ko: '권유함 ✓' },
+  byGP: { en: `Suggested by ${GP.name.en}`, ko: `${GP.name.ko}이 권유함` },
+  patientInterested: { en: 'Patient is interested', ko: '환자가 관심 표시함' },
+  askTrialP: { en: (t) => `Explain the study "${t}" in plain language. Could it suit me, and what should I ask ${GP.name.en}?`, ko: (t) => `"${t}" 연구를 쉽게 설명해 줘. 나에게 맞을 수 있는지, ${GP.name.ko}에게 무엇을 물어보면 좋을지 알려 줘.` },
+  askTrialD: { en: (t) => `Review whether this patient may be eligible for the study "${t}", using only shared data, and list what needs checking.`, ko: (t) => `공유된 데이터만으로 이 환자가 "${t}" 연구에 적격일 수 있는지 검토하고 확인할 사항을 정리해 줘.` },
+  askAgent: { en: 'Ask agent', ko: '에이전트에게 묻기' },
+  unlikelyMore: { en: (n) => `${n} more demo trial(s) unlikely to qualify`, ko: (n) => `참여가 어려운 데모 임상시험 ${n}건 더 보기` },
+  noTrials: { en: 'No demo trials match the conditions visible here.', ko: '여기서 확인할 수 있는 진단명에 맞는 데모 임상시험이 없습니다.' },
+  live: { en: 'Search ClinicalTrials.gov (live)', ko: 'ClinicalTrials.gov 실시간 검색' },
+  cond: { en: 'Condition', ko: '질환' },
+  loc: { en: 'Location', ko: '지역' },
+  search: { en: 'Search recruiting studies', ko: '모집 중인 연구 검색' },
+  searching: { en: 'Searching…', ko: '검색 중…' },
+  liveFine: { en: 'Only the condition and location entered here are sent to ClinicalTrials.gov, not the patient record. Always confirm eligibility with the study team.', ko: '환자 기록이 아니라 여기에 입력한 질환과 지역만 ClinicalTrials.gov로 전송됩니다. 적격 여부는 반드시 연구팀에 확인하세요.' },
+  liveNone: { en: 'No recruiting studies found for this search.', ko: '이 조건으로 모집 중인 연구를 찾지 못했습니다.' },
+  liveErr: { en: 'The live search could not be completed from this browser.', ko: '이 브라우저에서 실시간 검색을 완료하지 못했습니다.' },
+  openSite: { en: 'Open the same search on ClinicalTrials.gov ↗', ko: 'ClinicalTrials.gov에서 같은 조건으로 검색 ↗' },
+  sites: { en: 'Nearby sites', ko: '주변 기관' },
+  ages: { en: 'Ages', ko: '연령' },
+};
+const t = (k) => L(T[k]);
+
+const P = patientById(pid);
+const sharing = pid ? getSharing(pid) : {};
+const visible = Object.fromEntries(SECTION_KEYS.map((k) => [k, role === 'patient' || sharing[k] === 'full']));
+const conds = visible.conditions ? RECORDS[pid].conditions.map((c) => c.code) : [];
+let city = P ? P.city : '';
+let spFilter = 'rel';
+let flags = pid ? getTrialFlags(pid) : {};
+const agentBase = role === 'patient' ? 'agent.html?' : `agent.html?patient=${pid}&`;
+const askHref = (q) => `${agentBase}ask=${encodeURIComponent(q)}`;
+
+function renderHead() {
+  document.documentElement.lang = lang;
+  document.body.className = `role-${role}`;
+  document.title = ko ? '전문의·임상시험' : 'Specialists and Trials';
+  $('#topbar').innerHTML = topbar({ lang, engine: getEngine(), session, patient: P, agentHref: role === 'patient' ? 'agent.html' : `agent.html?patient=${pid}`, showPatients: role === 'physician' });
+  $('#notice').textContent = t('notice');
+  $('#title').textContent = role === 'patient' ? t('titleP') : L(T.titleD)(P.name);
+  $('#lead').textContent = role === 'patient' ? t('leadP') : t('leadD');
+  $('#basis').innerHTML = `
+    <div><div class="k">${t('basis')}</div>
+      <div class="tags">${conds.length ? conds.map((c) => `<span class="tag">${esc(L(CONDITIONS[c]))}</span>`).join('') : `<span class="tag">—</span>`}
+        <span class="tag">${P.age} · ${esc(L(SEX[P.sex]))}</span></div>
+      ${!visible.conditions ? `<div class="note">${t('condHidden')}</div>` : ''}</div>
+    <div><div class="k">${t('near')}</div><select id="city" aria-label="${t('near')}">${Object.keys(CITY_COORDS).map((c) => `<option ${c === city ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div>`;
+  $('#city').addEventListener('change', (e) => { city = e.target.value; renderSpec(); renderTrials(); });
+}
+
+/* ---------- Specialists ---------- */
+function relevantSpecs() { return [...new Set(conds.flatMap((c) => CONDITIONS[c].specialties))]; }
+function renderSpec() {
+  const rel = relevantSpecs();
+  if (!rel.length && spFilter === 'rel') spFilter = 'all';
+  const list = SPECIALISTS
+    .filter((s) => (spFilter === 'all' ? true : spFilter === 'rel' ? rel.includes(s.sp) : s.sp === spFilter))
+    .map((s) => ({ ...s, km: distanceKm(city, s.city) }))
+    .sort((a, b) => (a.km ?? 999) - (b.km ?? 999));
+  const chips = [
+    ...(rel.length ? [['rel', `${t('relevant')}: ${rel.map((r) => L(SPECIALTIES[r]).replace(/\s*\(.*\)/, '')).join(', ')}`]] : []),
+    ['all', t('all')],
+    ...Object.keys(SPECIALTIES).map((k) => [k, L(SPECIALTIES[k])]),
+  ];
+  $('#tabSpec').innerHTML = `${t('spec')}<span class="count">${list.length}</span>`;
+  $('#paneSpec').innerHTML = `
+    <div class="filters">${chips.map(([k, lab]) => `<button type="button" class="fchip" data-sp="${k}" aria-pressed="${spFilter === k}">${esc(lab)}</button>`).join('')}
+      <span class="pill muted">${t('fictional')}</span></div>
+    ${list.length ? `<div class="grid">${list.map((s) => {
+      const why = conds.filter((c) => CONDITIONS[c].specialties.includes(s.sp)).map((c) => L(CONDITIONS[c]));
+      const spName = L(SPECIALTIES[s.sp]);
+      return `<article class="card">
+        <div><h3>${esc(s.name)}</h3><div class="sp">${esc(spName)}</div></div>
+        <div class="meta"><span>${esc(s.clinic)} · ${esc(s.city)}${s.km != null ? ` · ${s.km.toFixed(1)} ${t('km')}` : ''}</span>
+          <span>${t('langs')}: ${s.langs.join(', ')}</span><span>${esc(L(T.wait)(s.wait))}</span></div>
+        ${why.length ? `<div class="why">${esc(why.join(', '))}</div>` : ''}
+        <div class="actions"><a class="btn accent" href="${askHref(L(role === 'patient' ? T.askSpecP : T.askSpecD)(s.name, spName))}">${role === 'patient' ? t('discussP') : t('discussD')}</a></div>
+      </article>`;
+    }).join('')}</div>` : `<p class="empty">${t('noSpec')}</p>`}`;
+}
+$('#paneSpec').addEventListener('click', (e) => { const b = e.target.closest('[data-sp]'); if (b) { spFilter = b.dataset.sp; renderSpec(); } });
+
+/* ---------- Trials ---------- */
+function trialCard(tr) {
+  const ev = evaluateTrial(tr, P, visible);
+  const km = distanceKm(city, tr.city);
+  const f = flags[tr.id] || {};
+  const title = L(tr.title);
+  const mark = (r) => (r === true ? '<span class="mk yes">✓</span>' : r === false ? '<span class="mk no">✗</span>' : '<span class="mk unk">?</span>');
+  const mine = role === 'patient'
+    ? `<button type="button" class="btn ${f.interested ? 'primary' : ''}" data-flag="interested" data-id="${tr.id}">${f.interested ? t('interestedOn') : t('interested')}</button>`
+    : `<button type="button" class="btn ${f.suggested ? 'primary' : ''}" data-flag="suggested" data-id="${tr.id}">${f.suggested ? t('suggestedOn') : t('suggest')}</button>`;
+  const theirs = role === 'patient' ? (f.suggested ? `<span class="pill pending">${t('byGP')}</span>` : '') : (f.interested ? `<span class="pill full">${t('patientInterested')}</span>` : '');
+  return `<article class="trial">
+    <div class="trial-head"><h3>${esc(title)}</h3><span class="pill ${ev.status}">${t(ev.status)}</span></div>
+    <div class="meta">${tr.id} · ${t('phase')} ${tr.phase === 'N/A' ? t('notApplicable') : tr.phase} · ${esc(tr.site)}, ${esc(tr.city)}${km != null ? ` · ${km.toFixed(1)} km` : ''}</div>
+    <ul class="crit">${ev.rows.map((r) => `<li>${mark(r.result)}<span>${esc(L(r.c.label))}${r.result === null ? ` <small>(${t('cannot')}: ${esc(L(SECTIONS[r.c.needs].label))})</small>` : ''}</span></li>`).join('')}</ul>
+    <div class="flags">${mine}${theirs}<a class="btn" href="${askHref(L(role === 'patient' ? T.askTrialP : T.askTrialD)(title))}">${t('askAgent')}</a></div>
+  </article>`;
+}
+function renderTrials() {
+  const matched = DEMO_TRIALS.filter((tr) => tr.conditions.some((c) => conds.includes(c)));
+  const evald = matched.map((tr) => ({ tr, st: evaluateTrial(tr, P, visible).status }));
+  const good = evald.filter((x) => x.st !== 'unlikely'), bad = evald.filter((x) => x.st === 'unlikely');
+  $('#tabTrials').innerHTML = `${t('trials')}<span class="count">${good.length}</span>`;
+  const defCond = conds.length ? CONDITIONS[conds[0]].search : '';
+  const keepCond = $('#liveCond') ? $('#liveCond').value : defCond;
+  $('#paneTrials').innerHTML = `
+    <div class="section-h"><span>${t('demoTrials')}</span><span class="n">${t('demoNote')}</span></div>
+    ${good.length ? good.map((x) => trialCard(x.tr)).join('') : `<p class="empty">${t('noTrials')}</p>`}
+    ${bad.length ? `<details class="more"><summary>${esc(L(T.unlikelyMore)(bad.length))}</summary>${bad.map((x) => trialCard(x.tr)).join('')}</details>` : ''}
+    <div class="section-h"><span>${t('live')}</span></div>
+    <div class="live">
+      <form class="live-form" id="liveForm">
+        <div class="field"><label for="liveCond">${t('cond')}</label><input id="liveCond" value="${esc(keepCond)}" autocomplete="off" required></div>
+        <div class="field"><label for="liveLoc">${t('loc')}</label><input id="liveLoc" value="${esc(city)}" autocomplete="off"></div>
+        <button class="btn accent" type="submit" style="padding:9px 14px">${t('search')}</button>
+      </form>
+      <p class="fine">${t('liveFine')}</p>
+      <div class="results" id="liveResults"></div>
+    </div>`;
+  $('#liveForm').addEventListener('submit', (e) => { e.preventDefault(); liveSearch($('#liveCond').value.trim(), $('#liveLoc').value.trim()); });
+}
+$('#paneTrials').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-flag]');
+  if (!b) return;
+  const f = (flags[b.dataset.id] ||= {});
+  f[b.dataset.flag] = !f[b.dataset.flag];
+  saveTrialFlags(pid, flags);
+  renderTrials();
+});
+
+function siteUrl(cond, loc) { return `https://clinicaltrials.gov/search?cond=${encodeURIComponent(cond)}&locStr=${encodeURIComponent(loc)}`; }
+async function liveSearch(cond, loc) {
+  const box = $('#liveResults');
+  if (!cond) return;
+  box.innerHTML = `<p class="fine">${t('searching')}</p>`;
+  const params = new URLSearchParams({ 'query.cond': cond, 'filter.overallStatus': 'RECRUITING', pageSize: '10' });
+  if (loc) params.set('query.locn', loc);
+  const fallback = `<a class="btn" href="${siteUrl(cond, loc)}" target="_blank" rel="noopener">${t('openSite')}</a>`;
+  try {
+    const res = await fetch(`https://clinicaltrials.gov/api/v2/studies?${params}`, { headers: { Accept: 'application/json' } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const studies = data.studies || [];
+    if (!studies.length) { box.innerHTML = `<p class="fine">${t('liveNone')}</p>${fallback}`; return; }
+    const cityName = loc.split(',')[0].trim().toLowerCase();
+    box.innerHTML = studies.map((s) => {
+      const ps = s.protocolSection || {};
+      const id = ps.identificationModule?.nctId || '';
+      const title = ps.identificationModule?.briefTitle || id;
+      const phases = (ps.designModule?.phases || []).join(', ').replace(/PHASE/g, 'Phase ').replace(/_/g, ' ');
+      const el = ps.eligibilityModule || {};
+      const locs = (ps.contactsLocationsModule?.locations || []).filter((l) => !cityName || (l.city || '').toLowerCase().includes(cityName)).slice(0, 2).map((l) => [l.facility, l.city].filter(Boolean).join(', '));
+      return `<div class="result"><a href="https://clinicaltrials.gov/study/${encodeURIComponent(id)}" target="_blank" rel="noopener">${esc(title)} ↗</a>
+        <div class="meta">${esc(id)}${phases ? ` · ${esc(phases)}` : ''}${el.minimumAge || el.maximumAge ? ` · ${t('ages')}: ${esc(el.minimumAge || '—')}–${esc(el.maximumAge || '—')}` : ''}</div>
+        ${locs.length ? `<div class="meta">${t('sites')}: ${esc(locs.join(' · '))}</div>` : ''}</div>`;
+    }).join('') + fallback;
+  } catch (err) {
+    box.innerHTML = `<p class="err">${t('liveErr')} (${esc(err.message || err)})</p>${fallback}`;
+  }
+}
+
+/* ---------- Tabs ---------- */
+function showTab(id) {
+  document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.tab === id));
+  $('#paneSpec').hidden = id !== 'spec';
+  $('#paneTrials').hidden = id !== 'trials';
+  history.replaceState(null, '', `#${id}`);
+}
+document.querySelectorAll('.tabs button').forEach((b) => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+if (session && P) {
+  wireTopbar($('#topbar'), { onPatients: () => { location.href = 'agent.html'; } });
+  renderHead(); renderSpec(); renderTrials();
+  showTab(location.hash === '#trials' ? 'trials' : 'spec');
+}
+</script>
+</body>
+</html>
