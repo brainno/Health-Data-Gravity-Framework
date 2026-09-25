@@ -287,6 +287,26 @@
   .priority-item p { font-size: 14px; color: var(--muted); }
   .tag-inline { display:inline-block; font-size: 11px; font-weight: 700; color: var(--gold); border: 1px solid var(--gold); border-radius: 10px; padding: 1px 8px; margin-left: 6px; vertical-align: 1px; }
 
+  /* ---------- Agent section ---------- */
+  .agent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 36px; }
+  @media (max-width: 800px) { .agent-grid { grid-template-columns: 1fr; } }
+  .agent-card { background: var(--white); border: 1px solid var(--line); border-radius: 4px; padding: 30px 26px; border-top: 3px solid var(--patient); }
+  .agent-card.gp { border-top-color: var(--gp); }
+  .agent-card .agent-tag { font-size: 11px; letter-spacing: 1.5px; font-weight: 700; text-transform: uppercase; color: var(--patient); margin-bottom: 8px; }
+  .agent-card.gp .agent-tag { color: var(--gp); }
+  .agent-card h3 { font-size: 18px; font-weight: 600; color: var(--dark); margin-bottom: 10px; }
+  .agent-card > p { font-size: 14.5px; color: var(--muted); margin-bottom: 14px; }
+  .agent-card ul { list-style: none; }
+  .agent-card li { font-size: 13.5px; color: var(--muted); padding-left: 16px; position: relative; margin-bottom: 7px; }
+  .agent-card li::before { content: ""; position: absolute; left: 0; top: 8px; width: 5px; height: 5px; border-radius: 50%; background: var(--line); }
+  .agent-cta-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .agent-cta {
+    display: inline-block; background: var(--dark); color: var(--white); text-decoration: none;
+    font-size: 14px; font-weight: 600; padding: 13px 24px; border-radius: 24px; transition: background 0.2s ease;
+  }
+  .agent-cta:hover { background: var(--teal); }
+  .agent-note { font-size: 12.5px; color: var(--muted); max-width: 560px; }
+
   /* ---------- About / footer ---------- */
   .about { background: var(--dark); color: var(--white); }
   .about .section-label { color: var(--teal-lt); }
@@ -360,6 +380,7 @@
   <a href="#security" data-label="Security"><span>Security</span></a>
   <a href="#priorities" data-label="Priorities"><span>Priorities</span></a>
   <a href="#usecases" data-label="Use Cases"><span>In Practice</span></a>
+  <a href="#agent" data-label="Agent"><span>HDGF Agent</span></a>
   <a href="#about" data-label="About"><span>About</span></a>
 </nav>
 
@@ -726,6 +747,43 @@
         <button class="fs-btn" id="fsPrev" type="button" aria-label="Scroll left">←</button>
         <button class="fs-btn" id="fsNext" type="button" aria-label="Scroll right">→</button>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- AGENT -->
+<section id="agent" class="alt">
+  <div class="wrap reveal">
+    <div class="section-label">10 — Try It</div>
+    <h2 class="title">HDGF Agent: the framework as a working prototype</h2>
+    <p class="sub">An AI agent built on one shared record, with two views. The patient controls what is shared, and the agent can only read what consent allows. The physician's agent sees only what the patient has chosen to share.</p>
+
+    <div class="agent-grid">
+      <div class="agent-card">
+        <div class="agent-tag">Patient mode</div>
+        <h3>Understand and use your own data</h3>
+        <p>A personal agent that reads the whole record on the patient's behalf.</p>
+        <ul>
+          <li>Explains lab results and trends in plain language</li>
+          <li>Helps prepare questions for the next GP visit</li>
+          <li>Manages what is shared, section by section, and answers physicians' access requests</li>
+        </ul>
+      </div>
+      <div class="agent-card gp">
+        <div class="agent-tag">Physician mode</div>
+        <h3>Understand the patient more deeply</h3>
+        <p>A clinical co-author assistant that works only within the patient's consent.</p>
+        <ul>
+          <li>Summarises the shared record and flags trends before a visit</li>
+          <li>Points to what the data cannot show: private context, emotion, the embodied encounter</li>
+          <li>Suggests open questions and requests access to unshared data with a stated reason</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="agent-cta-row">
+      <a class="agent-cta" href="app.html">Open the HDGF Agent →</a>
+      <p class="agent-note">Prototype using a fictional patient. Not medical advice. Runs in demo mode by default; a live Claude model can be used with your own API key.</p>
     </div>
   </div>
 </section>
