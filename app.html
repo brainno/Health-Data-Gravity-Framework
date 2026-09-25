@@ -17,11 +17,10 @@
   html, body { min-height: 100%; }
   body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; -webkit-font-smoothing: antialiased; }
   h1, h2 { font-family: 'Source Serif 4', Georgia, serif; }
-  button, input { font-family: inherit; }
+  button, input, select { font-family: inherit; }
 
   .wrap { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
   @media (max-width: 860px) { .wrap { grid-template-columns: 1fr; } }
-
   .intro { background: var(--dark); color: var(--white); padding: 40px 48px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
   @media (max-width: 860px) { .intro { padding: 24px 20px 28px; } }
   .intro::before { content: ""; position: absolute; top: -20%; right: -20%; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgba(46,125,114,0.28) 0%, transparent 70%); }
@@ -49,40 +48,68 @@
   .lang button[aria-pressed=true] { background: var(--dark); color: var(--white); }
   .card { margin: auto 0; max-width: 440px; width: 100%; align-self: center; padding: 30px 0; }
   .card h2 { font-size: 26px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
-  .card .sub { font-size: 13.5px; color: var(--muted); margin-bottom: 22px; }
+  .card .sub { font-size: 13.5px; color: var(--muted); margin-bottom: 20px; }
 
-  .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg-alt); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
-  .roles button { border: 0; background: transparent; padding: 10px 8px; border-radius: 7px; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .social { display: grid; gap: 10px; }
+  .sbtn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; border: 1px solid #CFCBC0; background: var(--white); color: var(--dark); font-size: 14.5px; font-weight: 600; padding: 11px 14px; border-radius: 22px; cursor: pointer; min-height: 44px; }
+  .sbtn:hover { background: var(--bg-alt); }
+  .sbtn.apple { background: #000; color: #fff; border-color: #000; }
+  .sbtn.apple:hover { background: #222; }
+  .sbtn.meta { background: #1877F2; color: #fff; border-color: #1877F2; }
+  .sbtn.meta:hover { background: #166FE5; }
+  .sbtn .demo { font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; padding: 1px 6px; border-radius: 8px; background: rgba(0,0,0,0.08); }
+  .sbtn.apple .demo, .sbtn.meta .demo { background: rgba(255,255,255,0.22); }
+  .gslot { min-height: 44px; display: flex; justify-content: center; }
+  .or { display: flex; align-items: center; gap: 12px; margin: 22px 0 16px; font-size: 12px; color: var(--muted); }
+  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg-alt); border-radius: 10px; padding: 4px; margin-bottom: 14px; }
+  .roles button { border: 0; background: transparent; padding: 9px 8px; border-radius: 7px; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; }
   .roles button[aria-selected=true] { background: var(--white); color: var(--dark); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-
   .label { font-size: 12.5px; font-weight: 600; color: var(--dark); margin-bottom: 8px; }
-  .accounts { display: grid; gap: 8px; margin-bottom: 18px; }
-  .acct { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; cursor: pointer; background: var(--white); position: relative; }
+  .accounts { display: grid; gap: 8px; margin-bottom: 14px; }
+  .acct { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer; background: var(--white); position: relative; }
   .acct:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
   .acct input { position: absolute; opacity: 0; pointer-events: none; }
   .acct:has(input:focus-visible) { outline: 2px solid var(--teal-lt); outline-offset: 2px; }
-  .av { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex: 0 0 auto; }
+  .av { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; flex: 0 0 auto; }
   .acct strong { display: block; font-size: 14px; color: var(--dark); }
   .acct small { display: block; font-size: 12px; color: var(--muted); }
-
-  .field { margin-bottom: 14px; }
-  .field input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 14px; background: var(--bg-alt); color: var(--muted); }
-  .go { width: 100%; border: 0; background: var(--accent); color: var(--white); font-size: 15px; font-weight: 600; padding: 13px; border-radius: 10px; cursor: pointer; margin-top: 4px; }
+  .go { width: 100%; border: 0; background: var(--accent); color: var(--white); font-size: 15px; font-weight: 600; padding: 12px; border-radius: 10px; cursor: pointer; }
   .go:hover { filter: brightness(0.95); }
+  .go:disabled { opacity: 0.5; cursor: default; }
   .fine { font-size: 12px; color: var(--muted); margin-top: 14px; line-height: 1.5; }
-  .links { display: flex; gap: 16px; margin-top: 18px; font-size: 12.5px; flex-wrap: wrap; }
+  .links { display: flex; gap: 16px; margin-top: 16px; font-size: 12.5px; flex-wrap: wrap; }
   .links a { color: var(--teal); text-decoration: none; font-weight: 600; }
+  .err { color: #A0412A; font-size: 13px; margin-top: 10px; }
+
+  .who { display: flex; align-items: center; gap: 12px; background: var(--white); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin-bottom: 18px; }
+  .who small { display: block; color: var(--muted); font-size: 12px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--dark); margin-bottom: 5px; }
+  .field input, .field select { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; font-size: 14px; background: var(--white); color: var(--ink); }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
+  .field .hint { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+  .check { display: flex; gap: 8px; font-size: 12.5px; color: var(--ink); margin: 6px 0 14px; align-items: flex-start; }
+  .check input { margin-top: 3px; accent-color: var(--teal); }
+  .back { border: 0; background: none; color: var(--muted); font-size: 12.5px; cursor: pointer; margin-top: 12px; }
+
+  dialog { border: 0; border-radius: 10px; padding: 0; max-width: 400px; width: calc(100% - 32px); box-shadow: 0 20px 60px rgba(0,0,0,0.25); color: var(--ink); margin: auto; }
+  dialog::backdrop { background: rgba(20,30,38,0.5); }
+  .dlg { padding: 22px 22px 18px; }
+  .dlg h3 { font-family: 'Source Serif 4', serif; font-size: 19px; color: var(--dark); margin-bottom: 6px; }
+  .dlg p { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+  .btn { border: 1px solid var(--line); background: var(--white); color: var(--ink); font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 16px; cursor: pointer; }
+  .btn.primary { background: var(--teal); border-color: var(--teal); color: var(--white); }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body class="role-patient">
 <div class="wrap">
   <section class="intro">
     <a class="brand" href="index.html"><strong>HDGF Agent</strong><span id="tProto"></span></a>
-    <div class="intro-body">
-      <h1 id="tHead"></h1>
-      <p id="tLead"></p>
-      <ul id="tPoints"></ul>
-    </div>
+    <div class="intro-body"><h1 id="tHead"></h1><p id="tLead"></p><ul id="tPoints"></ul></div>
     <p class="intro-foot" id="tFoot"></p>
   </section>
 
@@ -93,63 +120,132 @@
         <button type="button" data-lang="ko">한국어</button>
       </div>
     </div>
-    <form class="card" id="form">
+
+    <!-- Step 1: sign in -->
+    <div class="card" id="stepSignIn">
       <h2 id="tSignIn"></h2>
       <p class="sub" id="tSub"></p>
-      <div class="roles" role="tablist">
-        <button type="button" role="tab" data-role="patient" id="tRolePatient"></button>
-        <button type="button" role="tab" data-role="physician" id="tRolePhys"></button>
+      <div class="social">
+        <div id="googleSlot"></div>
+        <button type="button" class="sbtn apple" data-provider="apple"></button>
+        <button type="button" class="sbtn meta" data-provider="meta"></button>
       </div>
-      <div class="label" id="tChoose"></div>
-      <div class="accounts" id="accounts"></div>
-      <div class="field"><input type="password" value="demo-password" disabled aria-label="Password"></div>
-      <button class="go" type="submit" id="tGo"></button>
+      <p class="err" id="authErr" hidden></p>
+      <div class="or" id="tOr"></div>
+      <form id="demoForm">
+        <div class="roles" role="tablist">
+          <button type="button" role="tab" data-role="patient" id="tRolePatient"></button>
+          <button type="button" role="tab" data-role="physician" id="tRolePhys"></button>
+        </div>
+        <div class="accounts" id="accounts"></div>
+        <button class="go" type="submit" id="tGo"></button>
+      </form>
       <p class="fine" id="tFine"></p>
       <div class="links"><a href="settings.html" id="tSettings"></a><a href="index.html" id="tAbout"></a></div>
+    </div>
+
+    <!-- Step 2: create account (first sign-in with a provider) -->
+    <form class="card" id="stepCreate" hidden>
+      <h2 id="tCreate"></h2>
+      <p class="sub" id="tCreateSub"></p>
+      <div class="who" id="whoBox"></div>
+      <div class="label" id="tIam"></div>
+      <div class="roles" role="tablist">
+        <button type="button" role="tab" data-role="patient" id="tRolePatient2"></button>
+        <button type="button" role="tab" data-role="physician" id="tRolePhys2"></button>
+      </div>
+      <div id="createPatient">
+        <div class="label" id="tSample"></div>
+        <div class="accounts" id="sampleList"></div>
+      </div>
+      <div id="createPhys" hidden>
+        <div class="field"><label for="cName" id="tDispName"></label><input id="cName" required autocomplete="name"></div>
+        <div class="field"><label for="cSpec" id="tSpec"></label><select id="cSpec"></select></div>
+        <div class="field"><label for="cClinic" id="tClinic"></label><input id="cClinic" autocomplete="organization"></div>
+        <div class="field"><label for="cLicense" id="tLicense"></label><input id="cLicense" autocomplete="off"><p class="hint" id="tLicenseHint"></p></div>
+      </div>
+      <label class="check"><input type="checkbox" id="cAgree" required><span id="tAgree"></span></label>
+      <button class="go" type="submit" id="tCreateGo"></button>
+      <button type="button" class="back" id="tBack"></button>
     </form>
   </section>
 </div>
 
-<script type="module">
-import { getLang, setLang, pick, esc, PATIENTS, SEX, GP, CONDITIONS, RECORDS, getSession, signIn } from './js/hdgf-core.js';
+<!-- Demo-mode provider sign-in -->
+<dialog id="demoDlg">
+  <form class="dlg" method="dialog" id="demoDlgForm">
+    <h3 id="dTitle"></h3>
+    <p id="dText"></p>
+    <div class="field"><label for="dName" id="dNameL"></label><input id="dName" required></div>
+    <div class="field"><label for="dEmail" id="dEmailL"></label><input id="dEmail" type="email" required></div>
+    <div class="dlg-actions"><button class="btn" value="cancel" formnovalidate id="dCancel"></button><button class="btn primary" value="ok" id="dOk"></button></div>
+  </form>
+</dialog>
 
-// Already signed in → go straight to the agent.
-if (getSession()) location.replace('agent.html');
+<script type="module">
+import { getLang, setLang, pick, esc, PATIENTS, SEX, GP, CONDITIONS, RECORDS, getSession, signIn, getAccounts, saveAccount } from './js/hdgf-core.js';
+import { PROVIDER_NAME, isConfigured, mountGoogleButton, signInWithApple, signInWithMeta } from './js/hdgf-auth.js';
+
+const params = new URLSearchParams(location.search);
+const next = (() => { const n = params.get('next') || ''; return /^(agent|care|settings)\.html([?#].*)?$/.test(n) ? n : 'agent.html'; })();
+if (getSession()) location.replace(next);
 
 const $ = (s) => document.querySelector(s);
 let lang = getLang();
-let role = 'patient';
+let role = 'patient';           // demo account tab
+let createRole = 'patient';     // new account role
+let pendingIdentity = null;
 const L = (o) => pick(o, lang);
 const T = {
   proto: { en: 'Prototype', ko: '프로토타입' },
   head: { en: 'Your health data, with an agent on your side.', ko: '내 건강 데이터, 내 편인 에이전트와 함께.' },
   lead: { en: 'Patients own their record and decide what their clinician can see. Clinicians work with what patients share — and with what the data cannot show.', ko: '환자는 자신의 기록을 소유하고, 의료인이 볼 수 있는 범위를 정합니다. 의료인은 환자가 공유한 내용과, 데이터가 보여 주지 못하는 것까지 함께 다룹니다.' },
   points: {
-    en: ['Share, share an AI summary only, or keep private — per section', 'Patients: understand results, prepare for visits, manage sharing', 'Clinicians: patient list, pre-visit briefs, the questions data cannot answer', 'Nearby specialists and clinical trials for each patient'],
-    ko: ['항목별로 공개, AI 정리본만 공개, 비공개 선택', '환자: 결과 이해, 진료 준비, 공개 범위 관리', '의료인: 환자 목록, 진료 전 요약, 데이터로 답할 수 없는 질문', '환자별 주변 전문의와 임상시험 정보'],
+    en: ['Share, share an AI summary only, or keep private — per section', 'Share your record with a clinician by QR code or a short code', 'Clinicians: patient list, pre-visit briefs, the questions data cannot answer', 'Nearby specialists and clinical trials for each patient'],
+    ko: ['항목별로 공개, AI 정리본만 공개, 비공개 선택', 'QR 코드나 짧은 코드로 의료인에게 기록 공유', '의료인: 환자 목록, 진료 전 요약, 데이터로 답할 수 없는 질문', '환자별 주변 전문의와 임상시험 정보'],
   },
   foot: { en: 'Based on the Health Data Gravity Framework. <a href="index.html">About the framework</a>', ko: 'Health Data Gravity Framework를 바탕으로 합니다. <a href="index.html">프레임워크 소개</a>' },
-  signIn: { en: 'Sign in', ko: '로그인' },
-  sub: { en: 'Choose a demo account. All accounts and records are fictional.', ko: '데모 계정을 선택하세요. 모든 계정과 기록은 가상입니다.' },
+  signIn: { en: 'Sign in or create an account', ko: '로그인 또는 계정 만들기' },
+  sub: { en: 'Use an account you already have. New users set up their HDGF account after signing in.', ko: '이미 가진 계정을 사용하세요. 처음이면 로그인 후 HDGF 계정을 설정합니다.' },
+  cont: { en: (p) => `Continue with ${p}`, ko: (p) => `${p}로 계속하기` },
+  demo: { en: 'Demo', ko: '데모' },
+  or: { en: 'or try a demo account', ko: '또는 데모 계정으로 둘러보기' },
   rolePatient: { en: 'Patient', ko: '환자' },
   rolePhys: { en: 'Healthcare professional', ko: '의료인' },
-  choosePatient: { en: 'Demo patient accounts', ko: '데모 환자 계정' },
-  choosePhys: { en: 'Demo clinician account', ko: '데모 의료인 계정' },
-  go: { en: 'Sign in', ko: '로그인' },
-  fine: { en: 'Demo sign-in only: there is no real authentication and no password check. Do not enter real patient information.', ko: '데모용 로그인입니다. 실제 인증이나 비밀번호 확인은 없습니다. 실제 환자 정보를 입력하지 마세요.' },
+  go: { en: 'Enter demo', ko: '데모 시작' },
+  fine: { en: 'Prototype: all records are fictional, accounts are stored only in this browser, and sign-in tokens are not verified by a server. Do not enter real patient information.', ko: '프로토타입입니다. 모든 기록은 가상이고, 계정은 이 브라우저에만 저장되며, 로그인 토큰은 서버에서 검증되지 않습니다. 실제 환자 정보를 입력하지 마세요.' },
   settings: { en: 'Settings', ko: '설정' },
   about: { en: 'About the framework', ko: '프레임워크 소개' },
   patients: { en: (n) => `${n} patients`, ko: (n) => `환자 ${n}명` },
+  authErr: { en: 'Sign-in did not complete:', ko: '로그인을 완료하지 못했습니다:' },
+  dTitle: { en: (p) => `${p} sign-in (demo)`, ko: (p) => `${p} 로그인 (데모)` },
+  dText: { en: (p) => `${p} sign-in is not configured for this site yet, so this simulates it. Enter any name and email; nothing is sent to ${p}.`, ko: (p) => `이 사이트에는 아직 ${p} 로그인이 설정되지 않아 로그인 과정을 흉내 냅니다. 아무 이름과 이메일이나 입력하세요. ${p}로는 아무것도 전송되지 않습니다.` },
+  dName: { en: 'Name', ko: '이름' },
+  dEmail: { en: 'Email', ko: '이메일' },
+  cancel: { en: 'Cancel', ko: '취소' },
+  ok: { en: 'Continue', ko: '계속' },
+  create: { en: 'Create your HDGF account', ko: 'HDGF 계정 만들기' },
+  createSub: { en: 'This is your first sign-in. Tell us how you will use HDGF.', ko: '처음 로그인하셨습니다. HDGF를 어떻게 사용할지 알려 주세요.' },
+  via: { en: (p) => `Signed in with ${p}`, ko: (p) => `${p} 계정으로 로그인됨` },
+  iam: { en: 'I am a', ko: '사용자 유형' },
+  sample: { en: 'Choose a sample record to explore (this prototype has no real health data)', ko: '살펴볼 샘플 기록을 선택하세요 (이 프로토타입에는 실제 건강 데이터가 없습니다)' },
+  dispName: { en: 'Name shown to patients', ko: '환자에게 표시될 이름' },
+  spec: { en: 'Specialty', ko: '전문 분야' },
+  clinic: { en: 'Clinic or hospital', ko: '의원 또는 병원' },
+  license: { en: 'Licence number (optional)', ko: '면허 번호 (선택)' },
+  licenseHint: { en: 'Not verified in this prototype. A real service would verify professional credentials before granting access.', ko: '이 프로토타입에서는 확인하지 않습니다. 실제 서비스는 접근 권한을 주기 전에 의료인 자격을 확인해야 합니다.' },
+  agree: { en: 'I understand this is a prototype with fictional data and that my account is stored only in this browser.', ko: '가상 데이터를 사용하는 프로토타입이며, 계정이 이 브라우저에만 저장된다는 것을 이해합니다.' },
+  createGo: { en: 'Create account', ko: '계정 만들기' },
+  back: { en: '← Use a different account', ko: '← 다른 계정 사용' },
+  specs: { en: ['Family medicine', 'Internal medicine', 'Paediatrics', 'Nursing', 'Pharmacy', 'Other'], ko: ['가정의학과', '내과', '소아청소년과', '간호', '약학', '기타'] },
 };
 const t = (k) => L(T[k]);
 
-function render() {
-  const prev = document.querySelector('input[name=acct]:checked');
+function renderSignIn() {
   document.documentElement.lang = lang;
   document.title = lang === 'ko' ? 'HDGF 에이전트 로그인' : 'HDGF Agent Sign-in';
-  document.body.className = `role-${role}`;
+  document.body.className = `role-${pendingIdentity ? createRole : role}`;
   document.querySelectorAll('.lang button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.lang === lang));
-  document.querySelectorAll('.roles button').forEach((b) => b.setAttribute('aria-selected', b.dataset.role === role));
   $('#tProto').textContent = t('proto');
   $('#tHead').textContent = t('head');
   $('#tLead').textContent = t('lead');
@@ -157,30 +253,142 @@ function render() {
   $('#tFoot').innerHTML = t('foot');
   $('#tSignIn').textContent = t('signIn');
   $('#tSub').textContent = t('sub');
-  $('#tRolePatient').textContent = t('rolePatient');
-  $('#tRolePhys').textContent = t('rolePhys');
-  $('#tChoose').textContent = role === 'patient' ? t('choosePatient') : t('choosePhys');
+  for (const p of ['apple', 'meta']) {
+    const b = document.querySelector(`.sbtn[data-provider=${p}]`);
+    b.innerHTML = `${esc(L(T.cont)(PROVIDER_NAME[p]))}${isConfigured(p) ? '' : ` <span class="demo">${t('demo')}</span>`}`;
+  }
+  renderGoogle();
+  $('#tOr').textContent = t('or');
+  document.querySelectorAll('#demoForm .roles button').forEach((b) => b.setAttribute('aria-selected', b.dataset.role === role));
+  $('#tRolePatient').textContent = $('#tRolePatient2').textContent = t('rolePatient');
+  $('#tRolePhys').textContent = $('#tRolePhys2').textContent = t('rolePhys');
   $('#tGo').textContent = t('go');
   $('#tFine').textContent = t('fine');
   $('#tSettings').textContent = t('settings');
   $('#tAbout').textContent = t('about');
+  const prev = document.querySelector('input[name=acct]:checked');
   $('#accounts').innerHTML = role === 'patient'
-    ? PATIENTS.map((p, i) => `<label class="acct"><input type="radio" name="acct" value="${p.id}" ${i === 0 ? 'checked' : ''}><span class="av">${p.initials}</span>
-        <span><strong>${esc(p.name)}</strong><small>${p.age} · ${esc(L(SEX[p.sex]))} · ${esc(RECORDS[p.id].conditions.slice(0, 2).map((c) => L(CONDITIONS[c.code])).join(', '))}</small></span></label>`).join('')
-    : `<label class="acct"><input type="radio" name="acct" value="${GP.id}" checked><span class="av">HP</span>
-        <span><strong>${esc(L(GP.name))}</strong><small>${esc(L(GP.role))} · ${esc(L(GP.clinic))} · ${esc(L(T.patients)(PATIENTS.length))}</small></span></label>`;
+    ? PATIENTS.map((p, i) => acctRow('acct', p.id, p.initials, p.name, `${p.age} · ${L(SEX[p.sex])} · ${RECORDS[p.id].conditions.slice(0, 2).map((c) => L(CONDITIONS[c.code])).join(', ')}`, i === 0)).join('')
+    : acctRow('acct', GP.id, 'HP', L(GP.name), `${L(GP.role)} · ${L(GP.clinic)} · ${L(T.patients)(3)}`, true);
   if (prev && role === 'patient') { const same = document.querySelector(`input[name=acct][value="${prev.value}"]`); if (same) same.checked = true; }
+  if (pendingIdentity) renderCreate();
+}
+const acctRow = (name, value, initials, title, sub, checked) => `<label class="acct"><input type="radio" name="${name}" value="${value}" ${checked ? 'checked' : ''}><span class="av">${esc(initials)}</span><span><strong>${esc(title)}</strong><small>${esc(sub)}</small></span></label>`;
+
+let googleMountedLang = null;
+function renderGoogle() {
+  const slot = $('#googleSlot');
+  if (isConfigured('google')) {
+    if (googleMountedLang === lang) return;
+    googleMountedLang = lang;
+    slot.className = 'gslot'; slot.innerHTML = '';
+    mountGoogleButton(slot, onIdentity, { locale: lang }).catch((e) => showErr(e));
+  } else {
+    slot.className = '';
+    slot.innerHTML = `<button type="button" class="sbtn" data-provider="google">${esc(L(T.cont)('Google'))} <span class="demo">${t('demo')}</span></button>`;
+  }
 }
 
-document.querySelectorAll('.lang button').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); lang = getLang(); render(); }));
-document.querySelectorAll('.roles button').forEach((b) => b.addEventListener('click', () => { role = b.dataset.role; render(); }));
-$('#form').addEventListener('submit', (e) => {
+function showErr(e) { const el = $('#authErr'); el.hidden = false; el.textContent = `${t('authErr')} ${(e && (e.error || e.message)) || e}`; }
+
+/* ---------- Provider sign-in ---------- */
+document.querySelector('.social').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-provider]');
+  if (!b) return;
+  const p = b.dataset.provider;
+  $('#authErr').hidden = true;
+  if (!isConfigured(p)) { openDemo(p); return; }
+  try { onIdentity(p === 'apple' ? await signInWithApple() : await signInWithMeta()); }
+  catch (err) { if (!/cancel|popup_closed/i.test(String((err && (err.error || err.message)) || err))) showErr(err); }
+});
+
+let demoProvider = null;
+function openDemo(p) {
+  demoProvider = p;
+  const name = PROVIDER_NAME[p];
+  $('#dTitle').textContent = L(T.dTitle)(name);
+  $('#dText').textContent = L(T.dText)(name);
+  $('#dNameL').textContent = t('dName');
+  $('#dEmailL').textContent = t('dEmail');
+  $('#dCancel').textContent = t('cancel');
+  $('#dOk').textContent = t('ok');
+  $('#dName').value = ''; $('#dEmail').value = '';
+  $('#demoDlg').showModal();
+}
+$('#demoDlg').addEventListener('close', () => {
+  if ($('#demoDlg').returnValue !== 'ok') return;
+  const email = $('#dEmail').value.trim().toLowerCase();
+  onIdentity({ provider: demoProvider, sub: `demo:${email}`, name: $('#dName').value.trim(), email, demo: true });
+});
+
+function onIdentity(id) {
+  const key = `${id.provider}:${id.sub}`;
+  const acct = getAccounts()[key];
+  if (acct) { startSession(acct); return; }
+  pendingIdentity = { ...id, key };
+  createRole = 'patient';
+  $('#stepSignIn').hidden = true;
+  $('#stepCreate').hidden = false;
+  $('#cName').value = id.name || '';
+  renderSignIn();
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Account creation ---------- */
+function renderCreate() {
+  const id = pendingIdentity;
+  $('#tCreate').textContent = t('create');
+  $('#tCreateSub').textContent = t('createSub');
+  $('#whoBox').innerHTML = `<span class="av">${esc((id.name || id.email || '?').slice(0, 1).toUpperCase())}</span><span><strong>${esc(id.name || id.email || '')}</strong><small>${esc(id.email || '')} · ${esc(L(T.via)(PROVIDER_NAME[id.provider]))}${id.demo ? ` (${t('demo')})` : ''}</small></span>`;
+  $('#tIam').textContent = t('iam');
+  document.querySelectorAll('#stepCreate .roles button').forEach((b) => b.setAttribute('aria-selected', b.dataset.role === createRole));
+  $('#createPatient').hidden = createRole !== 'patient';
+  $('#createPhys').hidden = createRole !== 'physician';
+  $('#cName').required = createRole === 'physician';
+  $('#tSample').textContent = t('sample');
+  const prev = document.querySelector('input[name=sample]:checked');
+  $('#sampleList').innerHTML = PATIENTS.map((p, i) => acctRow('sample', p.id, p.initials, p.name, `${p.age} · ${L(SEX[p.sex])} · ${RECORDS[p.id].conditions.slice(0, 2).map((c) => L(CONDITIONS[c.code])).join(', ')}`, prev ? prev.value === p.id : i === 0)).join('');
+  $('#tDispName').textContent = t('dispName');
+  $('#tSpec').textContent = t('spec');
+  const sv = $('#cSpec').selectedIndex;
+  $('#cSpec').innerHTML = T.specs[lang].map((s) => `<option>${esc(s)}</option>`).join('');
+  if (sv > 0) $('#cSpec').selectedIndex = sv;
+  $('#tClinic').textContent = t('clinic');
+  $('#tLicense').textContent = t('license');
+  $('#tLicenseHint').textContent = t('licenseHint');
+  $('#tAgree').textContent = t('agree');
+  $('#tCreateGo').textContent = t('createGo');
+  $('#tBack').textContent = t('back');
+}
+document.querySelectorAll('#stepCreate .roles button').forEach((b) => b.addEventListener('click', () => { createRole = b.dataset.role; renderSignIn(); }));
+$('#tBack').addEventListener('click', () => { pendingIdentity = null; $('#stepCreate').hidden = true; $('#stepSignIn').hidden = false; renderSignIn(); });
+$('#stepCreate').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = pendingIdentity;
+  const base = { key: id.key, provider: id.provider, sub: id.sub, email: id.email || '', demo: !!id.demo, created: new Date().toISOString() };
+  const acct = createRole === 'patient'
+    ? { ...base, role: 'patient', name: id.name || id.email, patientId: document.querySelector('input[name=sample]:checked').value }
+    : { ...base, role: 'physician', name: $('#cName').value.trim(), specialty: $('#cSpec').value, clinic: $('#cClinic').value.trim(), license: $('#cLicense').value.trim() };
+  saveAccount(acct);
+  startSession(acct);
+});
+
+function startSession(acct) {
+  const account = { key: acct.key, provider: acct.provider, email: acct.email, displayName: acct.name, specialty: acct.specialty || '', clinic: acct.clinic || '' };
+  signIn(acct.role === 'patient' ? { role: 'patient', patientId: acct.patientId, account } : { role: 'physician', clinicianId: acct.key, account });
+  location.href = next;
+}
+
+/* ---------- Demo accounts ---------- */
+document.querySelectorAll('.lang button').forEach((b) => b.addEventListener('click', () => { setLang(b.dataset.lang); lang = getLang(); renderSignIn(); }));
+document.querySelectorAll('#demoForm .roles button').forEach((b) => b.addEventListener('click', () => { role = b.dataset.role; renderSignIn(); }));
+$('#demoForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const v = document.querySelector('input[name=acct]:checked').value;
   signIn(role === 'patient' ? { role: 'patient', patientId: v } : { role: 'physician', clinicianId: v });
-  location.href = 'agent.html';
+  location.href = next;
 });
-render();
+renderSignIn();
 </script>
 </body>
 </html>

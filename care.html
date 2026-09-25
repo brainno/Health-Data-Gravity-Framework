@@ -90,19 +90,19 @@
 import {
   getLang, pick, esc, getEngine, getSession, getSharing, SECTION_KEYS, SECTIONS,
   PATIENTS, patientById, SEX, GP, RECORDS, CONDITIONS, SPECIALTIES, SPECIALISTS, CITY_COORDS, distanceKm,
-  DEMO_TRIALS, evaluateTrial, getTrialFlags, saveTrialFlags,
+  DEMO_TRIALS, evaluateTrial, getTrialFlags, saveTrialFlags, getRoster, clinicianId,
 } from './js/hdgf-core.js';
 import { topbar, wireTopbar } from './js/hdgf-ui.js';
 
 const session = getSession();
-if (!session) location.replace('app.html');
+if (!session) location.replace(`app.html?next=${encodeURIComponent(location.pathname.split('/').pop() + location.search + location.hash)}`);
 window.addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); });
 
 const lang = getLang(), ko = lang === 'ko';
 const L = (o) => pick(o, lang);
 const role = session ? session.role : 'patient';
 const pid = role === 'patient' ? session.patientId : new URLSearchParams(location.search).get('patient');
-if (session && !patientById(pid)) location.replace('agent.html');
+if (session && (!patientById(pid) || (role === 'physician' && !getRoster(clinicianId(session)).includes(pid)))) location.replace('agent.html');
 const $ = (s) => document.querySelector(s);
 
 const T = {
@@ -139,7 +139,7 @@ const T = {
   interestedOn: { en: 'Interested ✓', ko: '관심 표시함 ✓' },
   suggest: { en: 'Suggest to patient', ko: '환자에게 권유' },
   suggestedOn: { en: 'Suggested ✓', ko: '권유함 ✓' },
-  byGP: { en: `Suggested by ${GP.name.en}`, ko: `${GP.name.ko}이 권유함` },
+  byGP: { en: 'Suggested by your clinician', ko: '의료인이 권유함' },
   patientInterested: { en: 'Patient is interested', ko: '환자가 관심 표시함' },
   askTrialP: { en: (t) => `Explain the study "${t}" in plain language. Could it suit me, and what should I ask ${GP.name.en}?`, ko: (t) => `"${t}" 연구를 쉽게 설명해 줘. 나에게 맞을 수 있는지, ${GP.name.ko}에게 무엇을 물어보면 좋을지 알려 줘.` },
   askTrialD: { en: (t) => `Review whether this patient may be eligible for the study "${t}", using only shared data, and list what needs checking.`, ko: (t) => `공유된 데이터만으로 이 환자가 "${t}" 연구에 적격일 수 있는지 검토하고 확인할 사항을 정리해 줘.` },

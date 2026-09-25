@@ -115,6 +115,47 @@
   .input-row textarea:focus { outline: none; border-color: var(--accent); }
   .send { border: 0; background: var(--accent); color: var(--white); border-radius: 10px; padding: 0 18px; font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit; }
   .send:disabled { opacity: 0.5; cursor: default; }
+  /* ---------- Dialogs: share (patient) and import (clinician) ---------- */
+  dialog { border: 0; border-radius: 12px; padding: 0; max-width: 460px; width: calc(100% - 32px); box-shadow: 0 20px 60px rgba(0,0,0,0.25); color: var(--ink); margin: auto; }
+  dialog::backdrop { background: rgba(20,30,38,0.55); }
+  .dlg { padding: 22px 22px 18px; }
+  .dlg-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
+  .dlg h3 { font-family: 'Source Serif 4', serif; font-size: 20px; color: var(--dark); font-weight: 600; }
+  .dlg .x { border: 0; background: none; font-size: 22px; line-height: 1; color: var(--muted); cursor: pointer; padding: 2px 6px; }
+  .dlg .lead { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .qr-box { display: flex; justify-content: center; margin: 4px 0 10px; }
+  .qr-box svg { width: 220px; height: 220px; border: 1px solid var(--line); border-radius: 8px; }
+  .code-big { text-align: center; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 26px; font-weight: 700; letter-spacing: 2px; color: var(--dark); }
+  .code-exp { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .lvl-list { list-style: none; border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; margin-bottom: 12px; }
+  .lvl-list li { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; padding: 4px 0; border-bottom: 1px solid var(--bg-alt); }
+  .lvl-list li:last-child { border-bottom: 0; }
+  .dlg .warn { font-size: 11.5px; color: #8A6A1E; background: #FBF6E9; border-radius: 6px; padding: 8px 10px; margin-bottom: 12px; }
+  .dlg-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .itabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: var(--bg-alt); border-radius: 9px; padding: 3px; margin-bottom: 14px; }
+  .itabs button { border: 0; background: transparent; padding: 8px 6px; border-radius: 7px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; }
+  .itabs button[aria-selected=true] { background: var(--white); color: var(--dark); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .cam { position: relative; background: #0E1922; border-radius: 8px; overflow: hidden; aspect-ratio: 4 / 3; display: flex; align-items: center; justify-content: center; }
+  .cam video { width: 100%; height: 100%; object-fit: cover; }
+  .cam .frame { position: absolute; inset: 18%; border: 2px solid rgba(255,255,255,0.8); border-radius: 10px; pointer-events: none; }
+  .cam .msg-c { position: absolute; color: #C8D4D6; font-size: 12.5px; padding: 16px; text-align: center; }
+  .drop { border: 2px dashed var(--line); border-radius: 8px; padding: 26px 16px; text-align: center; font-size: 13px; color: var(--muted); cursor: pointer; display: block; }
+  .drop:hover, .drop.over { border-color: var(--gp); color: var(--gp); }
+  .drop input { display: none; }
+  .code-in { display: flex; gap: 8px; }
+  .code-in input { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 18px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 1.5px; text-transform: uppercase; }
+  .code-in input:focus { outline: none; border-color: var(--gp); }
+  .istatus { font-size: 12.5px; color: var(--muted); margin-top: 8px; min-height: 18px; }
+  .istatus.bad { color: #A0412A; }
+  .preview { border: 1px solid var(--gp); border-radius: 10px; padding: 12px 14px; margin-top: 12px; }
+  .preview .pv-head { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+  .preview .pv-head .av { width: 36px; height: 36px; border-radius: 50%; background: var(--gp); color: var(--white); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+  .preview strong { display: block; color: var(--dark); }
+  .preview small { display: block; font-size: 12px; color: var(--muted); }
+  .empty-list { background: var(--white); border: 1px dashed var(--line); border-radius: 10px; padding: 28px 20px; text-align: center; color: var(--muted); font-size: 13.5px; }
+  .empty-list .btn { margin-top: 12px; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: var(--dark); color: var(--white); font-size: 13px; padding: 10px 18px; border-radius: 20px; opacity: 0; transition: all 0.25s ease; pointer-events: none; z-index: 50; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -127,7 +168,7 @@
   <div class="list-inner">
     <h1 id="listTitle"></h1>
     <p class="lead" id="listLead"></p>
-    <div class="list-tools"><input type="search" id="listSearch" autocomplete="off"></div>
+    <div class="list-tools"><input type="search" id="listSearch" autocomplete="off"><button type="button" class="btn accent" id="addPatient" style="padding:9px 14px"></button></div>
     <div class="legend-row" id="listLegend"></div>
     <div class="plist" id="plist"></div>
   </div>
@@ -147,17 +188,53 @@
   </section>
 </div>
 
+<dialog id="shareDlg">
+  <div class="dlg">
+    <div class="dlg-head"><h3 id="shTitle"></h3><button type="button" class="x" data-close aria-label="Close">×</button></div>
+    <p class="lead" id="shLead"></p>
+    <div class="qr-box" id="shQr"></div>
+    <div class="code-big" id="shCode"></div>
+    <div class="code-exp" id="shExp"></div>
+    <ul class="lvl-list" id="shLevels"></ul>
+    <p class="warn" id="shWarn"></p>
+    <div class="dlg-actions">
+      <button type="button" class="btn" id="shCopy"></button>
+      <button type="button" class="btn" id="shNew"></button>
+      <button type="button" class="btn primary" data-close id="shDone"></button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="importDlg">
+  <div class="dlg">
+    <div class="dlg-head"><h3 id="imTitle"></h3><button type="button" class="x" data-close aria-label="Close">×</button></div>
+    <p class="lead" id="imLead"></p>
+    <div class="itabs" role="tablist">
+      <button type="button" role="tab" data-itab="camera" id="imTabCam"></button>
+      <button type="button" role="tab" data-itab="image" id="imTabImg"></button>
+      <button type="button" role="tab" data-itab="code" id="imTabCode"></button>
+    </div>
+    <div data-ipane="camera"><div class="cam"><video id="imVideo" playsinline muted></video><div class="frame"></div><div class="msg-c" id="imCamMsg"></div></div></div>
+    <div data-ipane="image" hidden><label class="drop" id="imDrop"><input type="file" accept="image/*" id="imFile"><span id="imDropTxt"></span></label></div>
+    <div data-ipane="code" hidden><form class="code-in" id="imCodeForm"><input id="imCode" placeholder="XXXX-XXXX-XXX" autocomplete="off" spellcheck="false" maxlength="40" aria-label="Share code"><button class="btn accent" type="submit" id="imCheck"></button></form></div>
+    <p class="istatus" id="imStatus" role="status"></p>
+    <div id="imPreview"></div>
+  </div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
 <script type="module">
 import {
   getLang, pick, esc, getEngine, makeClient, getSession, signOut,
   LEVELS, LEVEL_LABEL, SECTIONS, SECTION_KEYS, getSharing, saveSharing, getRequests, saveRequests, getTrialFlags,
   PATIENTS, patientById, SEX, GP, RECORDS, CONDITIONS, LAB_INFO, latest, previous, labStatus, targetText, BP_GOAL,
-  localizedRecord, DEMO_SUMMARIES,
+  localizedRecord, DEMO_SUMMARIES, clinicianName, clinicianId, getRoster, saveRoster,
 } from './js/hdgf-core.js';
+import { makeShareCode, formatCode, readShareCode, shareUrl, qrSvg, decodeQR, CODE_TTL_HOURS } from './js/hdgf-share.js';
 import { topbar, wireTopbar } from './js/hdgf-ui.js';
 
 const session = getSession();
-if (!session) location.replace('app.html');
+if (!session) location.replace(`app.html?next=${encodeURIComponent(location.pathname.split('/').pop() + location.search + location.hash)}`);
 window.addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); });
 
 const lang = getLang();
@@ -166,7 +243,7 @@ const L = (o) => pick(o, lang);
 const engine = getEngine();
 const role = session ? session.role : 'patient';
 let pid = !session ? null : role === 'patient' ? session.patientId : new URLSearchParams(location.search).get('patient');
-if (pid && !patientById(pid)) pid = null;
+if (pid && (!patientById(pid) || (role === 'physician' && !getRoster(clinicianId(session)).includes(pid)))) pid = null;
 let requests = getRequests();
 let sharing = pid ? getSharing(pid) : null;
 let busy = false;
@@ -174,6 +251,9 @@ const histories = {};  // `${role}:${pid}` → API messages
 const logs = {};       // `${role}:${pid}` → rendered nodes
 const summaryCache = {};
 const gpName = L(GP.name);
+const meName = clinicianName(session, lang);
+const meEn = clinicianName(session, 'en');
+const cid = clinicianId(session);
 const $ = (s) => document.querySelector(s);
 const last = (a) => a[a.length - 1];
 const num = (n) => n.toLocaleString(ko ? 'ko-KR' : 'en-US');
@@ -204,7 +284,7 @@ const UI = {
   summaryOnlyNote: { en: 'The patient shares only an AI-written summary of this section. The original entries are not visible to you or to the agent.', ko: '환자가 이 항목은 AI 정리본만 공개했습니다. 원본 기록은 선생님과 에이전트 모두 볼 수 없습니다.' },
   lockedNote: { en: 'The patient has not shared this section. Its contents are not visible to you or to the agent.', ko: '환자가 이 항목을 공개하지 않았습니다. 선생님과 에이전트 모두 내용을 볼 수 없습니다.' },
   requested: { en: 'Requested', ko: '요청함' },
-  reqText: { en: (s, r) => `<strong>${esc(GP.name.en)}</strong> requests full access to <strong>${esc(s)}</strong>: ${esc(r)}`, ko: (s, r) => `<strong>${esc(GP.name.ko)}</strong>이 <strong>${esc(s)}</strong> 원본 열람을 요청했습니다: ${esc(r)}` },
+  reqText: { en: (f, s, r) => `<strong>${esc(f)}</strong> requests full access to <strong>${esc(s)}</strong>: ${esc(r)}`, ko: (f, s, r) => `<strong>${esc(f)}</strong>의 <strong>${esc(s)}</strong> 원본 열람 요청: ${esc(r)}` },
   decline: { en: 'Decline', ko: '거절' },
   credits: { en: 'Credits', ko: '크레딧' },
   illustrative: { en: 'Illustrative', ko: '예시' },
@@ -232,7 +312,7 @@ const UI = {
   proposal: { en: (s, l) => `Change sharing of <strong>${esc(s)}</strong> to <strong>${esc(l)}</strong>?`, ko: (s, l) => `<strong>${esc(s)}</strong> 공개 수준을 <strong>${esc(l)}</strong>(으)로 바꿀까요?` },
   care: { en: 'Specialists & trials', ko: '전문의·임상시험' },
   listTitle: { en: 'My patients', ko: '내 환자' },
-  listLead: { en: `${GP.clinic.en} · patients who have registered ${GP.name.en} as their GP. You see each record only as far as the patient shares it.`, ko: `${GP.clinic.ko} · ${GP.name.ko}을 주치의로 등록한 환자입니다. 각 기록은 환자가 공개한 범위까지만 보입니다.` },
+  listLead: { en: 'Patients who have shared their record with you. You see each record only as far as the patient shares it.', ko: '기록을 공유한 환자입니다. 각 기록은 환자가 공개한 범위까지만 보입니다.' },
   search: { en: 'Search by name or condition', ko: '이름 또는 질환으로 검색' },
   condNotShared: { en: 'Conditions not shared', ko: '진단명 비공개' },
   condSummary: { en: 'Conditions: AI summary only', ko: '진단명: AI 정리본만 공개' },
@@ -241,6 +321,40 @@ const UI = {
   open: { en: 'Open', ko: '열기' },
   lastVisit: { en: 'Last visit', ko: '최근 진료' },
   noMatch: { en: 'No patients match.', ko: '일치하는 환자가 없습니다.' },
+  addPatient: { en: '+ Add patient (QR / code)', ko: '+ 환자 추가 (QR·코드)' },
+  emptyList: { en: 'No patients yet. Ask a patient to open HDGF and choose “Share with a clinician”, then add them here with the QR code or the code.', ko: '아직 환자가 없습니다. 환자에게 HDGF에서 “의료인과 공유”를 열어 달라고 한 뒤, QR 코드나 코드로 여기에 추가하세요.' },
+  remove: { en: 'Remove from my list', ko: '내 목록에서 제거' },
+  removeConfirm: { en: (n) => `Remove ${n} from your patient list? You can add them again with a new code.`, ko: (n) => `${n} 님을 환자 목록에서 제거할까요? 새 코드로 다시 추가할 수 있습니다.` },
+  shareBtn: { en: 'Share with a clinician (QR)', ko: '의료인과 공유 (QR)' },
+  shTitle: { en: 'Share with a clinician', ko: '의료인과 공유' },
+  shLead: { en: `Show this QR code to your clinician, or read out the code. It shares your record at the levels below and expires in ${CODE_TTL_HOURS} hours.`, ko: `의료인에게 이 QR 코드를 보여 주거나 코드를 불러 주세요. 아래 공개 수준으로 기록을 공유하며, ${CODE_TTL_HOURS}시간 뒤 만료됩니다.` },
+  shExp: { en: (d) => `Valid until ${d}`, ko: (d) => `${d}까지 유효` },
+  shWarn: { en: 'Anyone who has this code can open your record at these levels. Share it only with your clinician. To share at different levels, change them first and make a new code.', ko: '이 코드를 가진 사람은 누구나 이 공개 수준으로 기록을 열 수 있습니다. 담당 의료인에게만 보여 주세요. 공개 수준을 바꾸려면 먼저 변경한 뒤 새 코드를 만드세요.' },
+  shCopy: { en: 'Copy code', ko: '코드 복사' },
+  shNew: { en: 'New code', ko: '새 코드' },
+  shDone: { en: 'Done', ko: '완료' },
+  copied: { en: 'Code copied', ko: '코드를 복사했습니다' },
+  imTitle: { en: 'Add a patient', ko: '환자 추가' },
+  imLead: { en: 'Ask the patient to open HDGF and choose “Share with a clinician”. Scan the QR code, upload a photo of it, or type the code.', ko: '환자에게 HDGF에서 “의료인과 공유”를 열어 달라고 하세요. QR 코드를 스캔하거나, 사진을 올리거나, 코드를 입력합니다.' },
+  imCam: { en: 'Camera', ko: '카메라' },
+  imImg: { en: 'Image', ko: '이미지' },
+  imCode: { en: 'Code', ko: '코드 입력' },
+  imCamStart: { en: 'Starting camera…', ko: '카메라를 켜는 중…' },
+  imCamScan: { en: 'Point the camera at the QR code', ko: 'QR 코드에 카메라를 맞춰 주세요' },
+  imCamErr: { en: 'Camera not available. Allow camera access, or use Image or Code.', ko: '카메라를 사용할 수 없습니다. 카메라 권한을 허용하거나 이미지·코드 입력을 이용하세요.' },
+  imDrop: { en: 'Choose or drop an image of the QR code', ko: 'QR 코드 이미지를 선택하거나 끌어다 놓으세요' },
+  imNoQr: { en: 'No QR code found in this image.', ko: '이미지에서 QR 코드를 찾지 못했습니다.' },
+  imCheck: { en: 'Check', ko: '확인' },
+  errFormat: { en: 'This is not an HDGF share code.', ko: 'HDGF 공유 코드가 아닙니다.' },
+  errCheck: { en: 'The code has a typo. Check it and try again.', ko: '코드에 오타가 있습니다. 확인 후 다시 입력하세요.' },
+  errVersion: { en: 'This code comes from a version this app does not support.', ko: '이 앱에서 지원하지 않는 버전의 코드입니다.' },
+  errExpired: { en: (d) => `This code expired on ${d}. Ask the patient for a new one.`, ko: (d) => `이 코드는 ${d}에 만료되었습니다. 환자에게 새 코드를 요청하세요.` },
+  pvShares: { en: 'Shares with you', ko: '공유 범위' },
+  pvAdd: { en: 'Add to my patients', ko: '내 환자로 추가' },
+  pvUpdate: { en: 'Update sharing and open', ko: '공유 범위 갱신 후 열기' },
+  pvAlready: { en: 'Already in your list — adding again updates the sharing levels.', ko: '이미 목록에 있습니다. 다시 추가하면 공유 범위가 갱신됩니다.' },
+  added: { en: (n) => `${n} added`, ko: (n) => `${n} 님을 추가했습니다` },
+  importAsPatient: { en: 'You are signed in as a patient. Sign in as a clinician to add a patient with this code.', ko: '환자 계정으로 로그인되어 있습니다. 이 코드로 환자를 추가하려면 의료인 계정으로 로그인하세요.' },
 };
 const u = (k) => L(UI[k]);
 
@@ -307,7 +421,7 @@ async function access(section) {
   if (role === 'patient') return { ok: true, level: 'full', sharing_level: level, data: R()[section] };
   if (level === 'full') return { ok: true, level, data: R()[section] };
   if (level === 'summary') return { ok: true, level, summary: await summaryFor(section) };
-  return { ok: false, denied: true, level, error: `Not shared by the patient. ${GP.name.en} cannot view "${SECTIONS[section].label.en}" unless ${P().short} grants access.` };
+  return { ok: false, denied: true, level, error: `Not shared by the patient. ${meEn} cannot view "${SECTIONS[section].label.en}" unless ${P().short} grants access.` };
 }
 const sharingSummary = () => SECTION_KEYS.map((k) => ({ section: k, label: SECTIONS[k].label.en, level_with_gp: sharing[k] }));
 const persistSharing = () => saveSharing(pid, sharing);
@@ -331,7 +445,9 @@ function renderList() {
   $('#listSearch').placeholder = u('search');
   $('#listLegend').innerHTML = LEVELS.map((l) => `<span><i class="dot ${l}"></i>${esc(levelLabel(l))}</span>`).join('');
   const q = $('#listSearch').value.trim().toLowerCase();
-  const rows = PATIENTS.map((p) => {
+  const roster = getRoster(cid);
+  $('#addPatient').textContent = u('addPatient');
+  const rows = roster.map(patientById).map((p) => {
     const s = getSharing(p.id);
     const conds = s.conditions === 'full' ? RECORDS[p.id].conditions.map((c) => L(CONDITIONS[c.code])).join(', ') : s.conditions === 'summary' ? u('condSummary') : u('condNotShared');
     const visits = s.visits === 'full' ? RECORDS[p.id].visits[0].date : null;
@@ -346,10 +462,11 @@ function renderList() {
       <span class="c3">${esc(conds)}${visits ? `<small>${u('lastVisit')}: ${visits}</small>` : ''}</span>
       <span class="c4"><span class="dots" title="${esc(SECTION_KEYS.map((k) => `${secLabel(k)}: ${levelLabel(s[k])}`).join('\n'))}">${SECTION_KEYS.map((k) => `<i class="dot ${s[k]}"></i>`).join('')}</span></span>
       <span class="c5">${pending ? `<span class="pill pending">${u('pendingReq')}</span>` : ''}${interest ? `<span class="pill full">${u('trialInterest')}</span>` : ''}<span class="btn">${u('open')} →</span></span>
-    </button>`).join('') : `<p class="lead">${u('noMatch')}</p>`;
+    </button>`).join('') : roster.length ? `<p class="lead">${u('noMatch')}</p>` : `<div class="empty-list">${u('emptyList')}<br><button type="button" class="btn accent" data-add>${u('addPatient')}</button></div>`;
 }
 $('#listSearch').addEventListener('input', renderList);
-$('#plist').addEventListener('click', (e) => { const b = e.target.closest('[data-open]'); if (b) go(b.dataset.open); });
+$('#plist').addEventListener('click', (e) => { if (e.target.closest('[data-add]')) { openImport(); return; } const b = e.target.closest('[data-open]'); if (b) go(b.dataset.open); });
+$('#addPatient').addEventListener('click', () => openImport());
 
 /* =========================================================
    Side panel
@@ -383,11 +500,11 @@ const seg = (k) => `<div class="seg" role="group" aria-label="${esc(secLabel(k))
 function renderSide() {
   const p = P(), side = $('#side');
   const head = (eyebrow, sub) => `<div class="side-head"><div class="side-eyebrow">${eyebrow}</div><div class="side-title">${esc(p.name)}</div><div class="side-sub">${sub}</div>
-    <div class="side-actions"><a class="btn" href="care.html?patient=${p.id}">${u('care')} →</a></div></div>`;
+    <div class="side-actions">${role === 'patient' ? `<button type="button" class="btn accent" data-share>${u('shareBtn')}</button>` : ''}<a class="btn" href="care.html?patient=${p.id}">${u('care')} →</a>${role === 'physician' ? `<button type="button" class="btn" data-remove>${u('remove')}</button>` : ''}</div></div>`;
   if (role === 'patient') {
     const pending = myRequests().filter((r) => r.status === 'pending');
     side.innerHTML = `${head(u('myRecord'), `${p.age} · ${L(SEX[p.sex])} · ${u('gpLine')}`)}
-      ${pending.map((r) => `<div class="req"><p>${L(UI.reqText)(secLabel(r.section), r.reason)}</p>
+      ${pending.map((r) => `<div class="req"><p>${L(UI.reqText)(r.from || gpName, secLabel(r.section), r.reason)}</p>
         <div class="req-actions"><button class="btn primary" data-req="${r.id}" data-act="full">${esc(levelLabel('full'))}</button>
           <button class="btn gold" data-req="${r.id}" data-act="summary">${esc(levelLabel('summary'))}</button>
           <button class="btn" data-req="${r.id}" data-act="decline">${u('decline')}</button></div></div>`).join('')}
@@ -411,6 +528,8 @@ function renderSide() {
   }
 }
 $('#side').addEventListener('click', async (e) => {
+  if (e.target.closest('[data-share]')) { openShare(); return; }
+  if (e.target.closest('[data-remove]')) { if (confirm(L(UI.removeConfirm)(P().name))) { saveRoster(cid, getRoster(cid).filter((x) => x !== pid)); go(null); } return; }
   const segBtn = e.target.closest('button[data-sec]');
   if (segBtn) { sharing[segBtn.dataset.sec] = segBtn.dataset.level; persistSharing(); renderSide(); return; }
   const gen = e.target.closest('button[data-gen]');
@@ -660,7 +779,7 @@ async function dRequest(a) {
     return;
   }
   const s = a.step(`request_access("${target}")`, 'run'); await wait(280); s.classList.remove('run');
-  requests.push({ id: String(Date.now()), patientId: pid, section: target, reason: ko ? '최근 변화를 이해하고 진료 계획을 함께 세우기 위해' : 'to understand recent changes and plan care together', status: 'pending' });
+  requests.push({ id: String(Date.now()), patientId: pid, from: meName, section: target, reason: ko ? '최근 변화를 이해하고 진료 계획을 함께 세우기 위해' : 'to understand recent changes and plan care together', status: 'pending' });
   persistRequests(); renderSide();
   const now = sharing[target] === 'summary' ? (ko ? '현재는 AI 정리본만 공개되어 있습니다. ' : 'It is currently shared as an AI summary only. ') : (ko ? '현재는 비공개입니다. ' : 'It is currently private. ');
   await stream(a, ko
@@ -694,7 +813,7 @@ You are the personal health agent of ${p.name} (${p.age}, ${SEX[p.sex].en.toLowe
 Help them understand and use their own health data in plain language. Explain results and trends, help them prepare for visits, and help them decide what to share and at which level. They own the data. Sharing changes need their explicit confirmation, so propose them with propose_sharing_change.
 Do not diagnose, change medications or give doses. Refer clinical decisions to ${GP.name.en}. If something sounds urgent, tell them to seek care promptly.`;
   return `${common}
-You are the clinical co-author assistant for ${GP.name.en}, family physician. You are talking with ${GP.name.en}, who is reviewing ${p.name} (${p.age}, ${SEX[p.sex].en.toLowerCase()}).
+You are the clinical co-author assistant for ${meEn}, a clinician. You are talking with ${meEn}, who is reviewing ${p.name} (${p.age}, ${SEX[p.sex].en.toLowerCase()}).
 You can only see what the patient shares. For summary-level sections you receive only the AI summary; treat it as all you know and do not try to reconstruct the details. For private sections, say plainly they are not shared and never guess, infer or hint at their contents. You may use request_access to ask the patient for full access, with a clear reason.
 Support the physician as a Holistic Companion. Summarise the shared data and flag trends. Also point out what the data cannot show: private and sensitive context, emotional context, and what only an in-person examination reveals. Suggest respectful, open questions for the visit. Support shared decision-making with the patient, not for them. Clinical decisions remain the physician's.`;
 }
@@ -711,7 +830,7 @@ async function runTool(name, input, agent) {
     if (!SECTIONS[input.section]) return { ok: false, error: 'Unknown section.' };
     if (sharing[input.section] === 'full') return { ok: true, result: 'Already shared in full.' };
     if (myRequests().some((r) => r.section === input.section && r.status === 'pending')) return { ok: true, result: 'A request is already pending.' };
-    requests.push({ id: String(Date.now()), patientId: pid, section: input.section, reason: input.reason, status: 'pending' });
+    requests.push({ id: String(Date.now()), patientId: pid, from: meName, section: input.section, reason: input.reason, status: 'pending' });
     persistRequests(); renderSide();
     return { ok: true, result: 'Request sent. Nothing more is shared until the patient decides.' };
   }
@@ -803,7 +922,7 @@ $('#input').addEventListener('input', autosize);
    ========================================================= */
 function go(id, push = true) {
   if (busy) return;
-  pid = id && patientById(id) ? id : null;
+  pid = id && patientById(id) && (role === 'patient' || getRoster(cid).includes(id)) ? id : null;
   if (role === 'physician' && push) history.pushState({}, '', pid ? `agent.html?patient=${pid}` : 'agent.html');
   render();
 }
@@ -826,7 +945,135 @@ function render() {
   if (ask) { $('#input').value = ask; autosize(); }
   renderSide(); renderChips(); renderLog();
 }
-if (session) { wireTopbar($('#topbar'), { onPatients: () => go(null) }); render(); }
+/* =========================================================
+   Share (patient): QR code + typed code
+   ========================================================= */
+function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 1800); }
+const fmtDate = (d) => d.toLocaleString(ko ? 'ko-KR' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' });
+let shareCode = null;
+function renderShare(fresh) {
+  if (fresh || !shareCode) shareCode = makeShareCode(pid, sharing);
+  const info = readShareCode(shareCode);
+  $('#shTitle').textContent = u('shTitle');
+  $('#shLead').textContent = u('shLead');
+  $('#shQr').innerHTML = qrSvg(shareUrl(shareCode), { size: 220 });
+  $('#shCode').textContent = formatCode(shareCode);
+  $('#shExp').textContent = L(UI.shExp)(fmtDate(info.expires));
+  $('#shLevels').innerHTML = SECTION_KEYS.map((k) => `<li><span>${esc(secLabel(k))}</span>${pill(sharing[k])}</li>`).join('');
+  $('#shWarn').textContent = u('shWarn');
+  $('#shCopy').textContent = u('shCopy');
+  $('#shNew').textContent = u('shNew');
+  $('#shDone').textContent = u('shDone');
+}
+function openShare() { renderShare(true); $('#shareDlg').showModal(); }
+$('#shNew').addEventListener('click', () => renderShare(true));
+$('#shCopy').addEventListener('click', async () => { try { await navigator.clipboard.writeText(formatCode(shareCode)); toast(u('copied')); } catch { toast(formatCode(shareCode)); } });
+
+/* =========================================================
+   Import (clinician): camera, image, or typed code
+   ========================================================= */
+let camStream = null, camTimer = null;
+const scanCanvas = document.createElement('canvas');
+function frameData(src, w, h) {
+  const scale = Math.min(1, 800 / Math.max(w, h));
+  scanCanvas.width = Math.round(w * scale); scanCanvas.height = Math.round(h * scale);
+  const ctx = scanCanvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(src, 0, 0, scanCanvas.width, scanCanvas.height);
+  return ctx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+}
+function imStatus(msg, bad = false) { const el = $('#imStatus'); el.textContent = msg || ''; el.classList.toggle('bad', bad); }
+function stopCamera() { clearTimeout(camTimer); camTimer = null; if (camStream) camStream.getTracks().forEach((tr) => tr.stop()); camStream = null; }
+async function startCamera() {
+  stopCamera();
+  $('#imCamMsg').textContent = u('imCamStart');
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    const v = $('#imVideo'); v.srcObject = camStream; await v.play();
+    $('#imCamMsg').textContent = '';
+    imStatus(u('imCamScan'));
+    const tick = async () => {
+      if (!camStream) return;
+      if (v.videoWidth) { const text = await decodeQR(frameData(v, v.videoWidth, v.videoHeight)); if (text && handleScanned(text, true)) return; }
+      camTimer = setTimeout(tick, 250);
+    };
+    tick();
+  } catch { $('#imCamMsg').textContent = u('imCamErr'); imStatus(''); }
+}
+function showItab(id) {
+  document.querySelectorAll('[data-itab]').forEach((b) => b.setAttribute('aria-selected', b.dataset.itab === id));
+  document.querySelectorAll('[data-ipane]').forEach((pn) => { pn.hidden = pn.dataset.ipane !== id; });
+  imStatus(''); $('#imPreview').innerHTML = '';
+  if (id === 'camera') startCamera(); else stopCamera();
+  if (id === 'code') setTimeout(() => $('#imCode').focus(), 50);
+}
+document.querySelectorAll('[data-itab]').forEach((b) => b.addEventListener('click', () => showItab(b.dataset.itab)));
+function openImport(code) {
+  $('#imTitle').textContent = u('imTitle');
+  $('#imLead').textContent = u('imLead');
+  $('#imTabCam').textContent = u('imCam');
+  $('#imTabImg').textContent = u('imImg');
+  $('#imTabCode').textContent = u('imCode');
+  $('#imDropTxt').textContent = u('imDrop');
+  $('#imCheck').textContent = u('imCheck');
+  $('#imCode').value = code || '';
+  $('#importDlg').showModal();
+  if (code) { showItab('code'); handleScanned(code); }
+  else showItab(navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? 'camera' : 'code');
+}
+$('#importDlg').addEventListener('close', stopCamera);
+document.querySelectorAll('dialog [data-close]').forEach((b) => b.addEventListener('click', () => b.closest('dialog').close()));
+
+async function readImageFile(file) {
+  if (!file) return;
+  imStatus('…'); $('#imPreview').innerHTML = '';
+  try {
+    const bmp = await createImageBitmap(file);
+    const text = await decodeQR(frameData(bmp, bmp.width, bmp.height));
+    if (!text) { imStatus(u('imNoQr'), true); return; }
+    handleScanned(text);
+  } catch { imStatus(u('imNoQr'), true); }
+}
+$('#imFile').addEventListener('change', (e) => readImageFile(e.target.files[0]));
+const drop = $('#imDrop');
+drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); readImageFile(e.dataTransfer.files[0]); });
+$('#imCodeForm').addEventListener('submit', (e) => { e.preventDefault(); handleScanned($('#imCode').value); });
+
+// Returns true when a valid code was read (so the camera can stop).
+function handleScanned(text, fromCamera = false) {
+  const r = readShareCode(text);
+  if (!r.ok) {
+    const msg = r.reason === 'expired' ? L(UI.errExpired)(fmtDate(r.expires)) : r.reason === 'check' ? u('errCheck') : r.reason === 'format' ? u('errFormat') : u('errVersion');
+    imStatus(msg, true); $('#imPreview').innerHTML = '';
+    return false;
+  }
+  if (fromCamera) stopCamera();
+  const p = patientById(r.pid), already = getRoster(cid).includes(r.pid);
+  imStatus('');
+  $('#imPreview').innerHTML = `<div class="preview">
+    <div class="pv-head"><span class="av">${p.initials}</span><span><strong>${esc(p.name)}</strong><small>${p.age} · ${esc(L(SEX[p.sex]))} · ${esc(p.city)} · ${esc(formatCode(r.code))}</small></span></div>
+    <div class="section-label" style="margin:6px 0 4px"><span>${u('pvShares')}</span></div>
+    <ul class="lvl-list">${SECTION_KEYS.map((k) => `<li><span>${esc(secLabel(k))}</span>${pill(r.levels[k])}</li>`).join('')}</ul>
+    ${already ? `<p class="istatus">${u('pvAlready')}</p>` : ''}
+    <div class="dlg-actions"><button type="button" class="btn accent" id="pvAdd">${already ? u('pvUpdate') : u('pvAdd')}</button></div></div>`;
+  $('#pvAdd').addEventListener('click', () => {
+    saveRoster(cid, [...getRoster(cid), r.pid]);
+    saveSharing(r.pid, r.levels);
+    $('#importDlg').close();
+    toast(L(UI.added)(p.name));
+    go(r.pid);
+  });
+  return true;
+}
+
+if (session) {
+  wireTopbar($('#topbar'), { onPatients: () => go(null) });
+  const importCode = new URLSearchParams(location.search).get('import');
+  if (importCode) history.replaceState({}, '', 'agent.html');
+  render();
+  if (importCode) { if (role === 'physician') openImport(importCode); else toast(u('importAsPatient')); }
+}
 </script>
 </body>
 </html>

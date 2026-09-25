@@ -73,6 +73,23 @@ export function getSession() {
 }
 export function signIn(session) { store.set('hdgf.session', JSON.stringify(session)); }
 export function signOut() { store.del('hdgf.session'); }
+// Name shown for the signed-in clinician (demo account or a social-login account).
+export const clinicianName = (session, lang = getLang()) => (session && session.account && session.account.displayName) || pick(GP.name, lang);
+export const clinicianId = (session) => (session && session.clinicianId) || GP.id;
+
+/* ---------- Accounts created through Google / Apple / Meta sign-in ----------
+   Stored in this browser only. There is no server, so identity tokens are
+   not verified — see js/hdgf-auth.js. */
+export function getAccounts() { return readJSON('hdgf.accounts', {}); }
+export function saveAccount(acct) { const all = getAccounts(); all[acct.key] = acct; store.set('hdgf.accounts', JSON.stringify(all)); }
+
+/* ---------- Clinician patient lists ---------- */
+const DEFAULT_ROSTER = { [GP.id]: ['mira', 'priya', 'tom'] };
+export function getRoster(cid) {
+  const r = readJSON(`hdgf.roster.${cid}`, null);
+  return (r || DEFAULT_ROSTER[cid] || []).filter((id) => patientById(id));
+}
+export function saveRoster(cid, ids) { store.set(`hdgf.roster.${cid}`, JSON.stringify([...new Set(ids)])); }
 
 /* ---------- Sharing levels ---------- */
 export const LEVELS = ['full', 'summary', 'private'];
@@ -135,7 +152,8 @@ export function resetDemo(pid) {
 }
 export function wipeAll() {
   resetDemo();
-  ['hdgf.requests', 'hdgf.engine', 'hdgf.model', 'hdgf.key', 'hdgf.lang', 'hdgf.session'].forEach((k) => store.del(k));
+  ['hdgf.requests', 'hdgf.engine', 'hdgf.model', 'hdgf.key', 'hdgf.lang', 'hdgf.session', 'hdgf.accounts'].forEach((k) => store.del(k));
+  try { Object.keys(localStorage).filter((k) => k.startsWith('hdgf.roster.')).forEach((k) => store.del(k)); } catch {}
   store.del('hdgf.key', sessionStorage);
 }
 
@@ -189,7 +207,7 @@ export const CONDITIONS = {
 };
 
 /* ---------- Fictional records ---------- */
-const hm = (h, m) => ({ en: `${h} h ${m} min`, ko: `${h}시간 ${m}분` });
+const hm = (h, m) => ({ en: m ? `${h} h ${m} min` : `${h} h`, ko: m ? `${h}시간 ${m}분` : `${h}시간` });
 const GPV = { en: 'GP — Dr. Hana Park', ko: '의원 — 박하나 선생님' };
 
 export const RECORDS = {
