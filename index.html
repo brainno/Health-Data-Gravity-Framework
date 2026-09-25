@@ -93,6 +93,13 @@
   .hero p.lead { font-size: 18px; color: #B8C4C8; max-width: 620px; font-weight: 300; margin-bottom: 40px; }
   .byline { font-size: 13px; color: #7A8A8E; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 20px; max-width: 680px; }
   .byline strong { color: #C8D4D6; font-weight: 500; }
+.app-link {
+    position: absolute; top: 24px; right: 32px; z-index: 3;
+    font-size: 13px; font-weight: 600; color: var(--white); text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 8px 16px;
+    transition: all 0.2s ease;
+  }
+  .app-link:hover { background: var(--teal); border-color: var(--teal); }
   .scroll-cue {
     position: absolute; bottom: 40px; left: 32px; font-size: 11px; color: #6A7A7E;
     letter-spacing: 2px; display: flex; align-items: center; gap: 10px; z-index: 2;
@@ -358,6 +365,7 @@
 
 <!-- HERO -->
 <header class="hero" id="hero">
+  <a class="app-link" href="app.html">Try the HDGF Agent →</a>
   <div class="blob blob1" id="blob1"></div>
   <div class="blob blob2" id="blob2"></div>
   <div class="wrap hero-inner" id="heroInner">
