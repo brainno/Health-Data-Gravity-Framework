@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HDGF Agent Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dark: #1C2B36; --ink: #2A3A44; --teal: #2E7D72; --teal-lt: #4AA396; --patient: #C4714A; --gp: #3A6E8C;
+    --gold: #B8923A; --bg: #FAFAF7; --bg-alt: #F3F1EA; --line: #E2DFD4; --muted: #6B7680; --white: #FFFFFF;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  h1, h2, h3 { font-family: 'Source Serif 4', Georgia, serif; }
+  button, input, select { font-family: inherit; }
+
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 12px 20px; background: var(--dark); color: var(--white); flex-wrap: wrap; }
+  .brand { display: flex; align-items: baseline; gap: 10px; color: var(--white); text-decoration: none; }
+  .brand strong { font-family: 'Source Serif 4', serif; font-size: 18px; font-weight: 600; }
+  .brand span { font-size: 11px; letter-spacing: 1.5px; color: var(--teal-lt); text-transform: uppercase; font-weight: 600; }
+  .back { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--white); text-decoration: none; border: 1px solid rgba(255,255,255,0.25); border-radius: 16px; padding: 7px 14px; }
+  .back:hover { border-color: var(--teal-lt); }
+
+  .layout { max-width: 980px; margin: 0 auto; padding: 32px 20px 60px; display: grid; grid-template-columns: 200px 1fr; gap: 36px; }
+  @media (max-width: 760px) { .layout { grid-template-columns: 1fr; gap: 18px; padding-top: 20px; } }
+  .page-title { font-size: 28px; font-weight: 600; color: var(--dark); margin-bottom: 4px; grid-column: 1 / -1; }
+  .page-sub { font-size: 13.5px; color: var(--muted); grid-column: 1 / -1; margin-top: -30px; }
+  @media (max-width: 760px) { .page-sub { margin-top: -12px; } }
+
+  .tabs { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 20px; align-self: start; }
+  @media (max-width: 760px) { .tabs { flex-direction: row; overflow-x: auto; position: static; } }
+  .tabs a { font-size: 14px; color: var(--muted); text-decoration: none; padding: 9px 12px; border-radius: 6px; white-space: nowrap; }
+  .tabs a:hover { color: var(--dark); background: var(--bg-alt); }
+  .tabs a.active { color: var(--dark); background: var(--white); border: 1px solid var(--line); font-weight: 600; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .panel h2 { font-size: 21px; font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+  .panel > p.lead { font-size: 13.5px; color: var(--muted); margin-bottom: 20px; }
+  .group { background: var(--white); border: 1px solid var(--line); border-radius: 8px; padding: 20px 22px; margin-bottom: 16px; }
+  .group h3 { font-size: 15px; font-weight: 600; color: var(--dark); margin-bottom: 12px; font-family: 'Inter', sans-serif; }
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+  .field > label, .field > .flabel { display: block; font-size: 13px; font-weight: 600; color: var(--dark); margin-bottom: 6px; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 5px; }
+  input[type=password], input[type=text], select { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; font-size: 14px; background: var(--bg); color: var(--ink); }
+  input:focus, select:focus { outline: none; border-color: var(--teal); }
+  .key-row { display: flex; gap: 8px; }
+  .key-row input { flex: 1; min-width: 0; }
+
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .option { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; }
+  .option:has(input:checked) { border-color: var(--teal); background: #F0F7F5; }
+  .option input { margin-top: 3px; accent-color: var(--teal); }
+  .option strong { display: block; font-size: 14px; color: var(--dark); }
+  .option small { display: block; font-size: 12px; color: var(--muted); }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; cursor: pointer; }
+  .check input { accent-color: var(--teal); }
+
+  .btn { border: 1px solid var(--line); background: var(--white); color: var(--ink); font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 16px; cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--teal); color: var(--teal); }
+  .btn.primary { background: var(--teal); border-color: var(--teal); color: var(--white); }
+  .btn.primary:hover { background: #276B61; color: var(--white); }
+  .btn.danger:hover { border-color: #A0412A; color: #A0412A; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+  .status { font-size: 12.5px; color: var(--muted); }
+  .status.ok { color: var(--teal); }
+  .status.bad { color: #A0412A; }
+
+  /* sharing matrix */
+  .legend { display: grid; gap: 8px; margin-bottom: 4px; }
+  .legend div { font-size: 12.5px; color: var(--muted); display: flex; gap: 10px; align-items: baseline; }
+  .legend b { color: var(--dark); min-width: 128px; font-weight: 600; }
+  .share-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--bg-alt); flex-wrap: wrap; }
+  .share-row:last-child { border-bottom: 0; }
+  .share-row .nm { font-size: 14px; color: var(--dark); font-weight: 500; }
+  .share-row small { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 18px; padding: 2px; background: var(--bg); }
+  .seg button { border: 0; background: transparent; font-size: 12px; font-weight: 600; color: var(--muted); padding: 6px 11px; border-radius: 15px; cursor: pointer; white-space: nowrap; }
+  .seg button[aria-pressed=true][data-level=full] { background: var(--teal); color: var(--white); }
+  .seg button[aria-pressed=true][data-level=summary] { background: var(--gold); color: var(--white); }
+  .seg button[aria-pressed=true][data-level=private] { background: var(--patient); color: var(--white); }
+
+  .about p { font-size: 13.5px; color: var(--ink); margin-bottom: 10px; }
+  .about ul { margin: 0 0 10px 18px; font-size: 13.5px; }
+  .about li { margin-bottom: 5px; }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px); background: var(--dark); color: var(--white); font-size: 13px; padding: 10px 18px; border-radius: 20px; opacity: 0; transition: all 0.25s ease; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="app.html"><strong>HDGF Agent</strong><span data-i18n="prototype"></span></a>
+  <a class="back" href="app.html" data-i18n="back"></a>
+</header>
+
+<main class="layout">
+  <h1 class="page-title" data-i18n="title"></h1>
+  <p class="page-sub" data-i18n="sub"></p>
+
+  <nav class="tabs" aria-label="Settings sections">
+    <a href="#agent" data-tab="agent" data-i18n="tabAgent"></a>
+    <a href="#language" data-tab="language" data-i18n="tabLang"></a>
+    <a href="#data" data-tab="data" data-i18n="tabData"></a>
+    <a href="#about" data-tab="about" data-i18n="tabAbout"></a>
+  </nav>
+
+  <div>
+    <!-- AI AGENT -->
+    <section class="panel" id="panel-agent">
+      <h2 data-i18n="agentH"></h2>
+      <p class="lead" data-i18n="agentLead"></p>
+      <form class="group" id="engineForm">
+        <div class="field">
+          <span class="flabel" data-i18n="engine"></span>
+          <div class="options">
+            <label class="option"><input type="radio" name="engine" value="demo"><span><strong data-i18n="demo"></strong><small data-i18n="demoDesc"></small></span></label>
+            <label class="option"><input type="radio" name="engine" value="api"><span><strong>Anthropic Claude API</strong><small data-i18n="apiDesc"></small></span></label>
+          </div>
+        </div>
+        <div id="apiFields">
+          <div class="field">
+            <label for="apiKey" data-i18n="key"></label>
+            <div class="key-row">
+              <input type="password" id="apiKey" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
+              <button type="button" class="btn" id="toggleKey" data-i18n="show"></button>
+            </div>
+            <p class="hint" data-i18n="keyHint"></p>
+          </div>
+          <div class="field">
+            <label for="model" data-i18n="model"></label>
+            <select id="model"></select>
+          </div>
+          <div class="field">
+            <label class="check"><input type="checkbox" id="remember"> <span data-i18n="remember"></span></label>
+            <p class="hint" data-i18n="rememberHint"></p>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn primary" data-i18n="save"></button>
+          <button type="button" class="btn" id="testBtn" data-i18n="test"></button>
+          <button type="button" class="btn danger" id="clearKey" data-i18n="clearKey"></button>
+          <span class="status" id="engineStatus" role="status"></span>
+        </div>
+      </form>
+    </section>
+
+    <!-- LANGUAGE -->
+    <section class="panel" id="panel-language">
+      <h2 data-i18n="langH"></h2>
+      <p class="lead" data-i18n="langLead"></p>
+      <div class="group">
+        <div class="options" id="langOptions"></div>
+        <p class="hint" style="margin-top:12px" data-i18n="langHint"></p>
+      </div>
+    </section>
+
+    <!-- DATA -->
+    <section class="panel" id="panel-data">
+      <h2 data-i18n="dataH"></h2>
+      <p class="lead" data-i18n="dataLead"></p>
+      <div class="group">
+        <h3 data-i18n="levelsH"></h3>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="group">
+        <h3 data-i18n="sharingH"></h3>
+        <div id="shareRows"></div>
+      </div>
+      <div class="group">
+        <h3 data-i18n="manageH"></h3>
+        <div class="actions" style="margin-top:0">
+          <button type="button" class="btn" id="exportBtn" data-i18n="export"></button>
+          <button type="button" class="btn danger" id="resetBtn" data-i18n="reset"></button>
+          <button type="button" class="btn danger" id="wipeBtn" data-i18n="wipe"></button>
+        </div>
+        <p class="hint" style="margin-top:10px" data-i18n="manageHint"></p>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="panel about" id="panel-about">
+      <h2 data-i18n="aboutH"></h2>
+      <div class="group" id="aboutBody"></div>
+    </section>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import {
+  store, LANGS, getLang, setLang, pick, MODELS, getEngine, saveEngine, clearKey, makeClient,
+  LEVELS, LEVEL_LABEL, LEVEL_DESC, SECTIONS, SECTION_KEYS, getSharing, saveSharing, getRequests, resetDemo,
+  PATIENT, localizedRecord,
+} from './js/hdgf-core.js';
+
+const T = {
+  prototype: { en: 'Prototype', ko: '프로토타입' },
+  back: { en: '← Back to agent', ko: '← 에이전트로 돌아가기' },
+  title: { en: 'Settings', ko: '설정' },
+  sub: { en: 'Settings are stored in this browser only.', ko: '설정은 이 브라우저에만 저장됩니다.' },
+  tabAgent: { en: 'AI agent', ko: 'AI 에이전트' },
+  tabLang: { en: 'Language', ko: '언어' },
+  tabData: { en: 'Data & sharing', ko: '데이터 및 공개 설정' },
+  tabAbout: { en: 'About', ko: '정보' },
+  agentH: { en: 'AI agent', ko: 'AI 에이전트' },
+  agentLead: { en: 'Choose how the agent generates its answers.', ko: '에이전트가 답변을 생성하는 방식을 선택합니다.' },
+  engine: { en: 'Engine', ko: '엔진' },
+  demo: { en: 'Demo', ko: '데모' },
+  demoDesc: { en: 'Scripted responses to the suggested tasks. No key or cost.', ko: '추천 질문에 미리 작성된 응답으로 답합니다. 키와 비용이 필요 없습니다.' },
+  apiDesc: { en: 'Live model with your own API key. Open conversation.', ko: '본인 API 키로 실제 모델을 사용합니다. 자유 대화가 가능합니다.' },
+  key: { en: 'API key', ko: 'API 키' },
+  show: { en: 'Show', ko: '보기' },
+  hide: { en: 'Hide', ko: '숨기기' },
+  keyHint: { en: 'Create a key in the Anthropic Console. The key is sent only from this browser to api.anthropic.com.', ko: 'Anthropic Console에서 키를 발급받을 수 있습니다. 키는 이 브라우저에서 api.anthropic.com으로만 전송됩니다.' },
+  model: { en: 'Model', ko: '모델' },
+  remember: { en: 'Remember key in this browser', ko: '이 브라우저에 키 기억하기' },
+  rememberHint: { en: 'If unchecked, the key is kept only until this tab is closed. Do not remember a key on a shared computer.', ko: '선택하지 않으면 이 탭을 닫을 때까지만 키가 유지됩니다. 공용 컴퓨터에서는 키를 기억하지 마세요.' },
+  save: { en: 'Save', ko: '저장' },
+  test: { en: 'Test connection', ko: '연결 테스트' },
+  clearKey: { en: 'Remove key', ko: '키 삭제' },
+  saved: { en: 'Saved', ko: '저장되었습니다' },
+  needKey: { en: 'Enter an API key to use the Claude API.', ko: 'Claude API를 사용하려면 API 키를 입력하세요.' },
+  testing: { en: 'Testing…', ko: '테스트 중…' },
+  testOk: { en: 'Connected. The key can access', ko: '연결되었습니다. 사용 가능한 모델:' },
+  test401: { en: 'Invalid API key.', ko: 'API 키가 올바르지 않습니다.' },
+  test404: { en: 'This key cannot access the selected model.', ko: '이 키로는 선택한 모델을 사용할 수 없습니다.' },
+  testErr: { en: 'Could not connect:', ko: '연결할 수 없습니다:' },
+  keyRemoved: { en: 'API key removed. Engine set to Demo.', ko: 'API 키를 삭제했습니다. 엔진이 데모로 바뀌었습니다.' },
+  langH: { en: 'Language', ko: '언어' },
+  langLead: { en: 'Applies to the interface and to the agent’s replies.', ko: '화면 표시와 에이전트 답변에 적용됩니다.' },
+  langHint: { en: 'With the Claude API, the agent answers in this language by default, and follows you if you write in another language.', ko: 'Claude API 사용 시 기본적으로 이 언어로 답하며, 다른 언어로 질문하면 그 언어로 답합니다.' },
+  dataH: { en: 'Data & sharing', ko: '데이터 및 공개 설정' },
+  dataLead: { en: 'Decide how much of each part of your record your GP can see. You can change this at any time; changes apply immediately.', ko: '기록의 각 항목을 주치의에게 어느 수준까지 공개할지 정합니다. 언제든 바꿀 수 있고, 즉시 적용됩니다.' },
+  levelsH: { en: 'Sharing levels', ko: '공개 수준' },
+  sharingH: { en: 'Sharing with your GP', ko: '주치의 공개 설정' },
+  manageH: { en: 'Manage data', ko: '데이터 관리' },
+  export: { en: 'Export my data (JSON)', ko: '내 데이터 내보내기 (JSON)' },
+  reset: { en: 'Reset demo data', ko: '데모 데이터 초기화' },
+  wipe: { en: 'Delete all data in this browser', ko: '이 브라우저의 모든 데이터 삭제' },
+  manageHint: { en: 'Reset restores the default sharing levels and clears access requests. Delete also removes your API key and settings.', ko: '초기화는 공개 수준을 기본값으로 되돌리고 열람 요청을 지웁니다. 전체 삭제는 API 키와 설정까지 지웁니다.' },
+  confirmReset: { en: 'Reset sharing levels and access requests to the demo defaults?', ko: '공개 수준과 열람 요청을 데모 기본값으로 초기화할까요?' },
+  confirmWipe: { en: 'Delete all HDGF data, settings and the API key from this browser?', ko: '이 브라우저에서 HDGF 데이터, 설정, API 키를 모두 삭제할까요?' },
+  resetDone: { en: 'Demo data reset', ko: '데모 데이터를 초기화했습니다' },
+  wipeDone: { en: 'All local data deleted', ko: '모든 로컬 데이터를 삭제했습니다' },
+  aboutH: { en: 'About this prototype', ko: '이 프로토타입에 대하여' },
+};
+let lang = getLang();
+const t = (k) => pick(T[k], lang);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function toast(msg) { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 1800); }
+
+/* ---------- Tabs ---------- */
+function showTab(id) {
+  if (!document.getElementById(`panel-${id}`)) id = 'agent';
+  document.querySelectorAll('.panel').forEach((p) => p.classList.toggle('active', p.id === `panel-${id}`));
+  document.querySelectorAll('.tabs a').forEach((a) => a.classList.toggle('active', a.dataset.tab === id));
+}
+window.addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+
+/* ---------- Static text ---------- */
+function renderText() {
+  document.documentElement.lang = lang;
+  document.title = lang === 'ko' ? 'HDGF 에이전트 설정' : 'HDGF Agent Settings';
+  document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  $('#toggleKey').textContent = $('#apiKey').type === 'password' ? t('show') : t('hide');
+  $('#model').innerHTML = MODELS.map((m) => `<option value="${m.id}">${m.label} — ${esc(pick(m.note, lang))}</option>`).join('');
+  $('#model').value = formModel;
+  $('#langOptions').innerHTML = Object.entries(LANGS).map(([k, v]) => `<label class="option"><input type="radio" name="lang" value="${k}" ${k === lang ? 'checked' : ''}><span><strong>${v}</strong></span></label>`).join('');
+  $('#legend').innerHTML = LEVELS.map((l) => `<div><b>${esc(pick(LEVEL_LABEL[l], lang))}</b><span>${esc(pick(LEVEL_DESC[l], lang))}</span></div>`).join('');
+  renderSharing();
+  $('#aboutBody').innerHTML = lang === 'ko'
+    ? `<p>HDGF Agent는 Health Data Gravity Framework를 시연하기 위한 프로토타입입니다. 환자와 기록은 모두 가상이며, 의료 조언을 제공하지 않습니다.</p>
+       <ul><li>공개 설정, 열람 요청, 언어, 엔진 설정은 이 브라우저의 로컬 저장소에만 저장됩니다.</li>
+       <li>Claude API 엔진을 사용하면 질문과 필요한 기록 내용이 본인 API 키로 Anthropic API에 전송됩니다.</li>
+       <li>실제 환자 정보를 입력하지 마세요.</li></ul>
+       <p><a href="index.html">프레임워크 소개 페이지 보기 →</a></p>`
+    : `<p>HDGF Agent is a prototype that demonstrates the Health Data Gravity Framework. The patient and record are fictional, and it does not give medical advice.</p>
+       <ul><li>Sharing levels, access requests, language and engine settings are stored only in this browser’s local storage.</li>
+       <li>With the Claude API engine, your questions and the record content the agent reads are sent to the Anthropic API using your own key.</li>
+       <li>Do not enter real patient information.</li></ul>
+       <p><a href="index.html">About the framework →</a></p>`;
+}
+
+/* ---------- Engine ---------- */
+let formModel = getEngine().model;
+function loadEngineForm() {
+  const e = getEngine();
+  formModel = e.model;
+  document.querySelector(`input[name=engine][value=${e.kind}]`).checked = true;
+  $('#apiKey').value = e.key;
+  $('#model').value = e.model;
+  $('#remember').checked = e.remembered;
+  syncApiFields();
+}
+function syncApiFields() { $('#apiFields').hidden = document.querySelector('input[name=engine]:checked').value !== 'api'; }
+document.querySelectorAll('input[name=engine]').forEach((r) => r.addEventListener('change', syncApiFields));
+$('#model').addEventListener('change', (e) => { formModel = e.target.value; });
+$('#toggleKey').addEventListener('click', () => { const i = $('#apiKey'); i.type = i.type === 'password' ? 'text' : 'password'; $('#toggleKey').textContent = i.type === 'password' ? t('show') : t('hide'); });
+function setStatus(msg, cls = '') { const s = $('#engineStatus'); s.textContent = msg; s.className = `status ${cls}`; }
+
+$('#engineForm').addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  const kind = document.querySelector('input[name=engine]:checked').value;
+  const key = $('#apiKey').value.trim();
+  if (kind === 'api' && !key) { setStatus(t('needKey'), 'bad'); return; }
+  saveEngine({ kind, key, model: $('#model').value, remember: $('#remember').checked });
+  setStatus('');
+  toast(t('saved'));
+});
+$('#testBtn').addEventListener('click', async () => {
+  const key = $('#apiKey').value.trim();
+  if (!key) { setStatus(t('needKey'), 'bad'); return; }
+  setStatus(t('testing'));
+  try {
+    const client = await makeClient(key);
+    const m = await client.models.retrieve($('#model').value);
+    setStatus(`${t('testOk')} ${m.display_name || m.id}`, 'ok');
+  } catch (e) {
+    if (e && e.status === 401) setStatus(t('test401'), 'bad');
+    else if (e && e.status === 404) setStatus(t('test404'), 'bad');
+    else setStatus(`${t('testErr')} ${(e && e.message) || e}`, 'bad');
+  }
+});
+$('#clearKey').addEventListener('click', () => { clearKey(); loadEngineForm(); setStatus(t('keyRemoved')); });
+
+/* ---------- Language ---------- */
+$('#langOptions').addEventListener('change', (e) => {
+  if (e.target.name !== 'lang') return;
+  setLang(e.target.value); lang = getLang();
+  renderText(); toast(t('saved'));
+});
+
+/* ---------- Sharing ---------- */
+function renderSharing() {
+  const s = getSharing();
+  $('#shareRows').innerHTML = SECTION_KEYS.map((k) => `
+    <div class="share-row"><div class="nm">${esc(pick(SECTIONS[k].label, lang))}<small>${esc(pick(SECTIONS[k].desc, lang))}</small></div>
+      <div class="seg" role="group" aria-label="${esc(pick(SECTIONS[k].label, lang))}">
+        ${LEVELS.map((l) => `<button type="button" data-sec="${k}" data-level="${l}" aria-pressed="${s[k] === l}">${esc(pick(LEVEL_LABEL[l], lang))}</button>`).join('')}
+      </div></div>`).join('');
+}
+$('#shareRows').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-sec]'); if (!b) return;
+  const s = getSharing(); s[b.dataset.sec] = b.dataset.level; saveSharing(s);
+  renderSharing(); toast(t('saved'));
+});
+
+/* ---------- Data management ---------- */
+$('#exportBtn').addEventListener('click', () => {
+  const data = {
+    exported_at: new Date().toISOString(),
+    note: 'Fictional demo record — HDGF Agent prototype',
+    patient: { name: PATIENT.name, age: PATIENT.age, sex: pick(PATIENT.sex, lang), id: PATIENT.id },
+    sharing_with_gp: getSharing(),
+    access_requests: getRequests(),
+    record: localizedRecord(lang),
+  };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+  const a = document.createElement('a'); a.href = url; a.download = 'hdgf-my-data.json'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+$('#resetBtn').addEventListener('click', () => { if (!confirm(t('confirmReset'))) return; resetDemo(); renderSharing(); toast(t('resetDone')); });
+$('#wipeBtn').addEventListener('click', () => {
+  if (!confirm(t('confirmWipe'))) return;
+  ['hdgf.consent', 'hdgf.requests', 'hdgf.engine', 'hdgf.model', 'hdgf.key', 'hdgf.lang'].forEach((k) => store.del(k));
+  store.del('hdgf.key', sessionStorage);
+  lang = getLang(); loadEngineForm(); renderText(); setStatus(''); toast(t('wipeDone'));
+});
+
+loadEngineForm();
+renderText();
+showTab(location.hash.slice(1) || 'agent');
+</script>
+</body>
+</html>
